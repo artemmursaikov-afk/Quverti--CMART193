@@ -6,71 +6,74 @@
 <title>KUGOO NIGHT RIDE</title>
 <style>
 *{box-sizing:border-box;user-select:none;-webkit-user-select:none}
-body{margin:0;background:#080d1d;overflow:hidden;font-family:Arial,sans-serif}
+body{margin:0;overflow:hidden;background:#080d1d;font-family:Arial}
 canvas{width:100vw;height:100vh;display:block}
 #hud{
- position:absolute;top:12px;left:12px;color:white;
+ position:absolute;top:9px;left:9px;z-index:3;
  background:#10192ddd;border:1px solid #ff922c;
- border-radius:12px;padding:12px;font-weight:bold;line-height:1.6
+ color:white;border-radius:12px;padding:9px;
+ font-size:13px;font-weight:bold;line-height:1.7;
+ pointer-events:none
 }
-#topBtns{
- position:absolute;top:12px;right:12px;display:flex;gap:8px
-}
+#topBtns{position:absolute;right:9px;top:9px;display:flex;gap:5px;z-index:4}
 .topBtn{
- color:white;border-radius:12px;padding:13px 16px;
- font-size:15px;font-weight:bold;cursor:pointer
+ padding:10px 11px;border-radius:11px;
+ border:1px solid white;color:white;
+ font-size:12px;font-weight:bold
 }
-#invBtn{background:#2563eb;border:2px solid #93c5fd}
-#shopBtn{background:#e98222;border:2px solid #ffc16d}
-.modal{
- display:none;position:absolute;inset:0;background:#050914ed;
- color:white;align-items:center;justify-content:center;padding:18px;z-index:10
-}
-.panel{
- width:100%;max-width:420px;background:#111c32;
- border:2px solid #ff922c;border-radius:20px;padding:22px;text-align:center;
- max-height:90vh;overflow-y:auto
-}
-.panel h2{color:#ffad45;margin-top:0}
-.product{
- background:#1c2b46;border:1px solid #53627c;
- border-radius:15px;padding:18px;margin:15px 0
-}
-.product.activeItem{
- border:2px solid #10b981;background:#163042
-}
-.scooterIcon{font-size:60px}
-.product h3{margin:8px}
-.product p{color:#ffd18b;font-weight:bold}
-.stats{font-size:13px;color:#cbd5e1;margin-bottom:12px}
-.shopAction{
- width:100%;padding:15px;border:0;border-radius:12px;
- background:#0c9b55;color:white;font-weight:bold;font-size:17px;cursor:pointer
-}
-.closeBtn{
- margin-top:12px;background:#b72b35;color:white;
- border:0;border-radius:12px;padding:12px 25px;font-weight:bold;cursor:pointer
-}
+#invBtn{background:#2563eb}
+#shopBtn{background:#e98222}
 #controls{
- position:absolute;bottom:15px;width:100%;
- display:flex;justify-content:space-around;gap:8px;padding:0 10px
+ position:absolute;bottom:12px;left:0;width:100%;
+ display:flex;justify-content:space-between;
+ padding:0 12px;gap:8px;z-index:4;
+ pointer-events:none
 }
 #controls button{
- flex:1;max-width:230px;padding:17px 5px;
- border:2px solid #ffffff55;border-radius:18px;
- color:white;font-size:16px;font-weight:bold;touch-action:none;cursor:pointer
+ pointer-events:auto;width:65px;height:53px;
+ border:1px solid #ffffff77;border-radius:13px;
+ color:white;font-size:11px;font-weight:bold;
+ touch-action:none;opacity:.88
 }
-#gas{background:#0c9b55}
-#brake{background:#c92b32}
-#stunt{background:#8b36c9}
+#gas{background:#078b4d}
+#brake{background:#bd2936}
+#stunt{background:#8036bb}
+.modal{
+ display:none;position:absolute;inset:0;z-index:10;
+ background:#050914ed;color:white;
+ align-items:center;justify-content:center;padding:12px
+}
+.panel{
+ width:100%;max-width:420px;max-height:88vh;
+ overflow-y:auto;background:#111c32;
+ border:2px solid #ff922c;border-radius:18px;
+ padding:18px;text-align:center
+}
+.panel h2{color:#ffad45;margin-top:3px}
+.product{
+ background:#1c2b46;border:1px solid #53627c;
+ border-radius:14px;padding:15px;margin:12px 0
+}
+.activeItem{border:2px solid #10b981;background:#163042}
+.scooterIcon{font-size:48px}
+.stats{font-size:13px;color:#cbd5e1;margin:10px}
+.shopAction{
+ width:100%;padding:13px;border:0;border-radius:11px;
+ background:#0c9b55;color:white;font-weight:bold;font-size:15px
+}
+.shopAction:disabled{opacity:.5}
+.closeBtn{
+ margin-top:10px;background:#b72b35;color:white;
+ border:0;border-radius:11px;padding:11px 24px
+}
 </style>
 </head>
 <body>
 
 <div id="hud">
-🛴 <span id="modelName">KUGOO NIGHT RIDE</span><br>
-Скорость: <span id="speed">0</span> / <span id="maxSpdHud">60</span> км/ч<br>
-💵 Деньги: $<span id="money">0</span>
+ 🛴 <span id="modelName">F3+</span><br>
+ ⚡ Скорость: <span id="speed">0</span> км/ч<br>
+ 💵 Деньги: $<span id="money">0</span>
 </div>
 
 <div id="topBtns">
@@ -80,15 +83,19 @@ canvas{width:100vw;height:100vh;display:block}
 
 <div class="modal" id="shop">
  <div class="panel">
-  <h2>🛒 МАГАЗИН САМОКАТОВ</h2>
-  <div>Твой баланс: <b style="color:#ffc16d">$<span id="shopMoney">0</span></b></div>
+  <h2>🛒 МАГАЗИН</h2>
+  <p>Баланс: $<span id="shopMoney">0</span></p>
   <div class="product">
    <div class="scooterIcon">🛵</div>
-   <h3>KugooKirin M5 Pro</h3>
-   <p>Цена: $2000</p>
-   <div id="productStatus">С сиденьем, кофром и макс. скоростью 95 км/ч!</div>
-   <br>
-   <button class="shopAction" id="buyBtn" onclick="buyScooter()">КУПИТЬ ЗА $2000</button>
+   <h3>Kugoo M5 Pro</h3>
+   <p style="color:#ffd18b">Цена: $1500</p>
+   <div class="stats">
+    🪑 Сиденье<br>
+    📦 Задний кофр<br>
+    ⚙️ Амортизация спереди и сзади<br>
+    💡 Фары и подсветка
+   </div>
+   <button class="shopAction" id="buyBtn" onclick="buyScooter()">КУПИТЬ ЗА $1500</button>
   </div>
   <button class="closeBtn" onclick="closeModals()">ЗАКРЫТЬ</button>
  </div>
@@ -96,8 +103,7 @@ canvas{width:100vw;height:100vh;display:block}
 
 <div class="modal" id="inventory">
  <div class="panel" style="border-color:#60a5fa">
-  <h2 style="color:#93c5fd">🎒 МОЙ ИНВЕНТАРЬ</h2>
-  <div style="font-size:14px;color:#cbd5e1;margin-bottom:10px">Выбери самокат для поездки:</div>
+  <h2 style="color:#93c5fd">🎒 ИНВЕНТАРЬ</h2>
   <div id="invList"></div>
   <button class="closeBtn" onclick="closeModals()">ЗАКРЫТЬ</button>
  </div>
@@ -112,30 +118,45 @@ canvas{width:100vw;height:100vh;display:block}
 </div>
 
 <script>
-const c=document.getElementById("game");
-const ctx=c.getContext("2d");
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-let W=innerWidth,H=innerHeight,v=0,road=0,rotation=0;
+let W=0,H=0;
+let speed=0;
+let road=0;
 let gas=false,brake=false,stunt=false;
-let stuntAngle=0;
-let money=Number(localStorage.getItem("kugooMoney"))||0;
-let owned=localStorage.getItem("m5proOwned")==="true";
-let selected=localStorage.getItem("selectedScooter")||"KUGOO NIGHT RIDE";
+let money=0,owned=false;
+let selected="F3+";
+let lastTime=0;
+let incomeTimer=0;
+let stuntEffect=0;
+let suspension=0;
+let clouds=0;
 
-function saveGame(){
+try{
+ money=Number(localStorage.getItem("nightMoney"))||0;
+ owned=localStorage.getItem("nightM5")==="true";
+ selected=localStorage.getItem("nightScooter")||"F3+";
+ if(selected==="M5 PRO"&&!owned)selected="F3+";
+}catch(e){}
+
+function save(){
  try{
-  localStorage.setItem("kugooMoney",money);
-  localStorage.setItem("m5proOwned",owned);
-  localStorage.setItem("selectedScooter",selected);
+  localStorage.setItem("nightMoney",money);
+  localStorage.setItem("nightM5",owned);
+  localStorage.setItem("nightScooter",selected);
  }catch(e){}
 }
 
-function updateMoney(){
- const isM5=selected==="KUGOO M5 PRO";
+function maxSpeed(){
+ return selected==="M5 PRO"?95:60;
+}
+
+function updateUI(){
  document.getElementById("money").textContent=Math.floor(money);
  document.getElementById("shopMoney").textContent=Math.floor(money);
  document.getElementById("modelName").textContent=selected;
- document.getElementById("maxSpdHud").textContent=isM5?"95":"60";
+ document.getElementById("speed").textContent=Math.floor(speed);
 }
 
 function closeModals(){
@@ -156,172 +177,430 @@ function openInv(){
 }
 
 function updateShop(){
- updateMoney();
  const btn=document.getElementById("buyBtn");
- const status=document.getElementById("productStatus");
- if(!owned){
-  btn.textContent=money>=2000?"КУПИТЬ ЗА $2000":"НЕДОСТАТОЧНО ДЕНЕГ";
-  btn.disabled=money<2000;
-  btn.style.opacity=money<2000?".5":"1";
-  btn.style.background="#0c9b55";
-  status.textContent="С сиденьем, кофром и макс. скоростью 95 км/ч!";
- }else{
+ document.getElementById("shopMoney").textContent=Math.floor(money);
+
+ if(owned){
+  btn.textContent="✅ УЖЕ КУПЛЕН";
   btn.disabled=true;
-  btn.style.opacity="1";
-  btn.style.background="#334155";
-  btn.textContent="✅ КУПЛЕНО (В ИНВЕНТАРЕ)";
-  status.textContent="Самокат доступен для выбора в инвентаре!";
+ }else{
+  btn.disabled=money<1500;
+  btn.textContent=money>=1500?"КУПИТЬ ЗА $1500":"НЕДОСТАТОЧНО ДЕНЕГ";
  }
 }
 
 function buyScooter(){
- if(owned || money<2000)return;
- money-=2000;
+ if(owned||money<1500)return;
+ money-=1500;
  owned=true;
- selected="KUGOO M5 PRO";
- saveGame();
+ selected="M5 PRO";
+ save();
+ updateUI();
  updateShop();
  openInv();
 }
 
 function selectScooter(name){
- if(name==="KUGOO M5 PRO" && !owned)return;
+ if(name==="M5 PRO"&&!owned)return;
  selected=name;
- saveGame();
- updateMoney();
+ speed=0;
+ save();
+ updateUI();
  renderInventory();
 }
 
 function renderInventory(){
- const list=document.getElementById("invList");
  let html=`
-  <div class="product ${selected==='KUGOO NIGHT RIDE'?'activeItem':''}">
-   <div class="scooterIcon">🛴</div>
-   <h3>Kugoo Night Ride</h3>
-   <div class="stats">Макс. скорость: 60 км/ч | Доход: $5/сек</div>
-   <button class="shopAction" style="background:${selected==='KUGOO NIGHT RIDE'?'#10b981':'#2563eb'}"
-    onclick="selectScooter('KUGOO NIGHT RIDE')">
-    ${selected==='KUGOO NIGHT RIDE'?'✅ ВЫБРАНО':'ВЫБРАТЬ'}
-   </button>
-  </div>
- `;
+ <div class="product ${selected==="F3+"?"activeItem":""}">
+  <div class="scooterIcon">🛴</div>
+  <h3>Kugoo F3+</h3>
+  <div class="stats">Максимальная скорость: 60 км/ч<br>Доход: $5/сек</div>
+  <button class="shopAction" onclick="selectScooter('F3+')">
+  ${selected==="F3+"?"✅ ВЫБРАН":"ВЫБРАТЬ"}
+  </button>
+ </div>`;
 
  if(owned){
   html+=`
-   <div class="product ${selected==='KUGOO M5 PRO'?'activeItem':''}">
-    <div class="scooterIcon">🛵</div>
-    <h3>KugooKirin M5 Pro</h3>
-    <div class="stats">⚡ Макс. скорость: 95 км/ч | 💵 Доход: $12/сек</div>
-    <button class="shopAction" style="background:${selected==='KUGOO M5 PRO'?'#10b981':'#2563eb'}"
-     onclick="selectScooter('KUGOO M5 PRO')">
-     ${selected==='KUGOO M5 PRO'?'✅ ВЫБРАНО':'ВЫБРАТЬ'}
-    </button>
-   </div>
-  `;
+  <div class="product ${selected==="M5 PRO"?"activeItem":""}">
+   <div class="scooterIcon">🛵</div>
+   <h3>Kugoo M5 Pro</h3>
+   <div class="stats">Сиденье и кофр<br>Максимальная скорость: 95 км/ч<br>Доход: $12/сек</div>
+   <button class="shopAction" onclick="selectScooter('M5 PRO')">
+   ${selected==="M5 PRO"?"✅ ВЫБРАН":"ВЫБРАТЬ"}
+   </button>
+  </div>`;
  }else{
-  html+=`
-   <div class="product" style="opacity:0.6">
-    <div class="scooterIcon">🔒</div>
-    <h3>KugooKirin M5 Pro</h3>
-    <div class="stats">Не куплен. Открой магазин, чтобы купить за $2000!</div>
-   </div>
-  `;
+  html+=`<div class="product">🔒 Kugoo M5 Pro<br><br>Не куплен</div>`;
  }
- list.innerHTML=html;
+
+ document.getElementById("invList").innerHTML=html;
 }
 
 function resize(){
- W=c.width=window.innerWidth||document.documentElement.clientWidth;
- H=c.height=window.innerHeight||document.documentElement.clientHeight;
+ const dpr=Math.min(devicePixelRatio||1,2);
+ W=innerWidth;
+ H=innerHeight;
+ canvas.width=W*dpr;
+ canvas.height=H*dpr;
+ ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-window.addEventListener("resize",resize);
+addEventListener("resize",resize);
 resize();
 
 function hold(id,fn){
  const b=document.getElementById(id);
- b.addEventListener("touchstart",e=>{e.preventDefault();fn(true)},{passive:false});
- b.addEventListener("touchend",e=>{e.preventDefault();fn(false)},{passive:false});
- b.addEventListener("touchcancel",()=>fn(false));
- b.addEventListener("mousedown",e=>{e.preventDefault();fn(true)});
- window.addEventListener("mouseup",()=>fn(false));
+ b.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  b.setPointerCapture(e.pointerId);
+  fn(true);
+ });
+ b.addEventListener("pointerup",()=>fn(false));
+ b.addEventListener("pointercancel",()=>fn(false));
 }
 hold("gas",x=>gas=x);
 hold("brake",x=>brake=x);
-hold("stunt",x=>stunt=x);
+hold("stunt",x=>{
+ stunt=x;
+ if(x)stuntEffect=1;
+});
 
-window.addEventListener("keydown",e=>{
- if(e.key==="ArrowRight"||e.key==="d"||e.key==="D"||e.key==="в"||e.key==="В")gas=true;
- if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A"||e.key==="ф"||e.key==="Ф")brake=true;
+addEventListener("blur",()=>{
+ gas=false;brake=false;stunt=false;
+});
+
+addEventListener("keydown",e=>{
+ if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")gas=true;
+ if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")brake=true;
  if(e.key===" ")stunt=true;
 });
-window.addEventListener("keyup",e=>{
- if(e.key==="ArrowRight"||e.key==="d"||e.key==="D"||e.key==="в"||e.key==="В")gas=false;
- if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A"||e.key==="ф"||e.key==="Ф")brake=false;
+addEventListener("keyup",e=>{
+ if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")gas=false;
+ if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")brake=false;
  if(e.key===" ")stunt=false;
 });
 
 function line(x,y,x2,y2,color,w){
- ctx.strokeStyle=color;ctx.lineWidth=w;
- ctx.lineCap="round";ctx.beginPath();
- ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
+ ctx.strokeStyle=color;
+ ctx.lineWidth=w;
+ ctx.lineCap="round";
+ ctx.beginPath();
+ ctx.moveTo(x,y);
+ ctx.lineTo(x2,y2);
+ ctx.stroke();
 }
 
-// Безопасная функция отрисовки скруглённых прямоугольников для всех браузеров
-function box(x,y,w,h,r,color){
+function rounded(x,y,w,h,r,color){
  ctx.fillStyle=color;
- if(r>w/2)r=w/2;
- if(r>h/2)r=h/2;
  ctx.beginPath();
- ctx.moveTo(x+r,y);
- ctx.lineTo(x+w-r,y);
- ctx.quadraticCurveTo(x+w,y,x+w,y+r);
- ctx.lineTo(x+w,y+h-r);
- ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
- ctx.lineTo(x+r,y+h);
- ctx.quadraticCurveTo(x,y+h,x,y+h-r);
- ctx.lineTo(x,y+r);
- ctx.quadraticCurveTo(x,y,x+r,y);
- ctx.closePath();
+ ctx.roundRect(x,y,w,h,r);
  ctx.fill();
 }
 
-function city(){
- let horizon=H*.55;
- let sky=ctx.createLinearGradient(0,0,0,horizon);
- sky.addColorStop(0,"#03081b");
- sky.addColorStop(1,"#334767");
- ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+function city(dt){
+ let horizon=H*.49;
 
+ let sky=ctx.createLinearGradient(0,0,0,horizon);
+ sky.addColorStop(0,"#030819");
+ sky.addColorStop(1,"#273d62");
+ ctx.fillStyle=sky;
+ ctx.fillRect(0,0,W,H);
+
+ // Луна
  ctx.fillStyle="#fff0c2";
- ctx.shadowColor="#fff0c2";ctx.shadowBlur=20;
- ctx.beginPath();ctx.arc(W*.8,H*.13,24,0,Math.PI*2);ctx.fill();
+ ctx.shadowColor="#fff0c2";
+ ctx.shadowBlur=25;
+ ctx.beginPath();
+ ctx.arc(W*.79,H*.13,20,0,Math.PI*2);
+ ctx.fill();
  ctx.shadowBlur=0;
 
- for(let i=0;i<70;i++){
+ // Звёзды
+ for(let i=0;i<65;i++){
   ctx.fillStyle="#ffffff99";
-  ctx.fillRect(i*139%W,i*71%(horizon-25),2,2);
+  ctx.fillRect((i*139)%W,(i*71)%(Math.max(1,horizon-25)),2,2);
  }
 
- let offset=road*.3%105;
- for(let x=-105;x<W+105;x+=105){
-  let n=Math.floor((x+offset)/105);
-  let h=100+Math.abs(Math.sin(n*8.3))*190;
-  let bx=x-offset,by=horizon-h;
+ // Город
+ let offset=road*.25%100;
+ for(let x=-100;x<W+100;x+=100){
+  let n=Math.floor((x+offset)/100);
+  let bh=80+Math.abs(Math.sin(n*8.3))*170;
+  let bx=x-offset,by=horizon-bh;
+
   ctx.fillStyle="#101a35";
-  ctx.fillRect(bx,by,100,h);
-  for(let yy=by+17;yy<horizon-10;yy+=27){
-   for(let xx=bx+12;xx<bx+90;xx+=25){
-    ctx.fillStyle=((Math.floor(xx+yy+n)%4)===0)
-      ?"#ffcf75":"#425779";
-    ctx.fillRect(xx,yy,10,13);
+  ctx.fillRect(bx,by,95,bh);
+
+  for(let yy=by+15;yy<horizon-8;yy+=25){
+   for(let xx=bx+10;xx<bx+90;xx+=23){
+    ctx.fillStyle=(Math.floor(xx+yy+n)%4===0)?"#ffce76":"#52688d";
+    ctx.fillRect(xx,yy,9,12);
    }
   }
  }
 
- ctx.fillStyle="#22252d";
+ // Дорога
+ ctx.fillStyle="#242832";
  ctx.fillRect(0,horizon,W,H-horizon);
+
  ctx.fillStyle="#8793a6";
  ctx.fillRect(0,horizon,W,3);
 
- for(let x=-100;x<W+100;x+=120){
-  ctx.fillStyle="white";
+ // Разметка
+ for(let x=-100;x<W+100;x+=130){
+  let dx=x-(road*1.3%130);
+  ctx.fillStyle="#e7e7e7";
+  ctx.fillRect(dx,horizon+(H-horizon)*.52,55,5);
+ }
+
+ // Фонари
+ for(let i=0;i<6;i++){
+  let x=((i*220-road*.45)%(W+220)+W+220)%(W+220);
+  line(x,horizon,x,horizon-100,"#263449",5);
+  ctx.fillStyle="#ffdfa0";
+  ctx.shadowColor="#ffd17b";
+  ctx.shadowBlur=18;
+  ctx.beginPath();
+  ctx.arc(x,horizon-102,6,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+ }
+}
+
+function wheel(x,y,r){
+ ctx.save();
+ ctx.translate(x,y);
+
+ ctx.fillStyle="#090b10";
+ ctx.beginPath();
+ ctx.arc(0,0,r,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.strokeStyle="#565f69";
+ ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.arc(0,0,r-3,0,Math.PI*2);
+ ctx.stroke();
+
+ ctx.strokeStyle="#c4cbd3";
+ ctx.lineWidth=3;
+ ctx.beginPath();
+ ctx.arc(0,0,r*.67,0,Math.PI*2);
+ ctx.stroke();
+
+ for(let i=0;i<10;i++){
+  let a=i*Math.PI/5+road*.025;
+  line(0,0,Math.cos(a)*r*.66,Math.sin(a)*r*.66,"#b8c2ce",2);
+ }
+
+ ctx.fillStyle="#ff9028";
+ ctx.beginPath();
+ ctx.arc(0,0,5,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.restore();
+}
+
+// Амортизатор с пружиной
+function shock(x1,y1,x2,y2){
+ line(x1,y1,x2,y2,"#c5cbd1",5);
+ let dx=x2-x1,dy=y2-y1;
+ let len=Math.hypot(dx,dy);
+ let nx=-dy/len,ny=dx/len;
+
+ ctx.beginPath();
+ for(let i=0;i<=10;i++){
+  let t=i/10;
+  let side=i===0||i===10?0:(i%2===0?-4:4);
+  let x=x1+dx*t+nx*side;
+  let y=y1+dy*t+ny*side;
+  if(i===0)ctx.moveTo(x,y);
+  else ctx.lineTo(x,y);
+ }
+ ctx.strokeStyle="#ff9b36";
+ ctx.lineWidth=2.5;
+ ctx.stroke();
+}
+
+function scooter(){
+ const baseY=H*.73;
+ const scale=Math.min(W/900,H/570,1.05);
+ const s=scale;
+ const cx=W*.50;
+ const bounce=Math.sin(suspension)*2.2*s;
+
+ const rear=cx-150*s;
+ const front=cx+150*s;
+ const wheelY=baseY+bounce;
+
+ ctx.save();
+ ctx.translate(0,stuntEffect>0?Math.sin(stuntEffect*12)*1.5:0);
+
+ // Тень
+ ctx.fillStyle="#00000066";
+ ctx.beginPath();
+ ctx.ellipse(cx,wheelY+25*s,220*s,12*s,0,0,Math.PI*2);
+ ctx.fill();
+
+ // Колёса
+ wheel(rear,wheelY,34*s);
+ wheel(front,wheelY,34*s);
+
+ // Крылья
+ ctx.strokeStyle="#151d28";
+ ctx.lineWidth=10*s;
+ ctx.beginPath();
+ ctx.arc(rear,wheelY,42*s,Math.PI,Math.PI*2);
+ ctx.stroke();
+ ctx.beginPath();
+ ctx.arc(front,wheelY,42*s,Math.PI,Math.PI*2);
+ ctx.stroke();
+
+ // Рама и дека
+ line(rear,wheelY-4*s,front,wheelY-4*s,"#171f2b",18*s);
+ line(rear+15*s,wheelY-17*s,front-5*s,wheelY-17*s,"#ff8b25",5*s);
+
+ rounded(rear+15*s,wheelY-34*s,front-rear-30*s,23*s,5*s,"#252e3b");
+
+ // Подсветка деки
+ ctx.shadowColor="#ff8626";
+ ctx.shadowBlur=12;
+ line(rear+35*s,wheelY-12*s,front-35*s,wheelY-12*s,"#ff8d2d",3*s);
+ ctx.shadowBlur=0;
+
+ // Задний маятник
+ line(rear+5*s,wheelY-3*s,rear+75*s,wheelY-27*s,"#ff8425",9*s);
+ line(rear+5*s,wheelY-3*s,rear+65*s,wheelY-29*s,"#252e3b",3*s);
+
+ // Передняя подвеска
+ line(front,wheelY-3*s,front-65*s,wheelY-70*s,"#242c37",9*s);
+ shock(front-5*s,wheelY-10*s,front-62*s,wheelY-67*s);
+
+ // Задний амортизатор
+ shock(rear+15*s,wheelY-8*s,rear+70*s,wheelY-42*s);
+
+ // Рулевая стойка
+ let stemX=front-65*s;
+ let stemY=wheelY-70*s;
+ line(stemX,stemY,stemX-36*s,wheelY-310*s,"#171e29",14*s);
+ line(stemX-36*s,wheelY-310*s,stemX-36*s,wheelY-326*s,"#ff922c",4*s);
+
+ // Руль
+ line(stemX-75*s,wheelY-326*s,stemX+6*s,wheelY-326*s,"#111820",8*s);
+ line(stemX-75*s,wheelY-326*s,stemX-90*s,wheelY-326*s,"#ff922c",4*s);
+
+ // Передняя фара
+ ctx.fillStyle="#fff0ba";
+ ctx.shadowColor="#fff0a0";
+ ctx.shadowBlur=17;
+ ctx.beginPath();
+ ctx.arc(stemX-74*s,wheelY-326*s,7*s,0,Math.PI*2);
+ ctx.fill();
+ ctx.shadowBlur=0;
+
+ if(selected==="M5 PRO"){
+  // Сиденье
+  line(rear+75*s,wheelY-30*s,rear+95*s,wheelY-105*s,"#d2d2d2",6*s);
+  rounded(rear+65*s,wheelY-119*s,80*s,15*s,7*s,"#10151c");
+  rounded(rear+72*s,wheelY-123*s,67*s,7*s,4*s,"#343d4b");
+
+  // Кофр
+  rounded(rear-9*s,wheelY-92*s,68*s,44*s,8*s,"#171f2a");
+  ctx.strokeStyle="#ff8b29";
+  ctx.lineWidth=3*s;
+  ctx.strokeRect(rear-9*s,wheelY-92*s,68*s,44*s);
+  line(rear+1*s,wheelY-72*s,rear+50*s,wheelY-72*s,"#ff8b29",2*s);
+ }else{
+  // Детали F3+
+  rounded(rear+25*s,wheelY-50*s,65*s,14*s,4*s,"#333d49");
+  line(rear+40*s,wheelY-52*s,rear+75*s,wheelY-52*s,"#ff8e2c",3*s);
+ }
+
+ // Подножка
+ line(cx-12*s,wheelY-18*s,cx-2*s,wheelY+12*s,"#161d27",5*s);
+ line(cx-2*s,wheelY+12*s,cx+15*s,wheelY+12*s,"#161d27",4*s);
+
+ // Надпись на деке
+ ctx.fillStyle="#ff9a34";
+ ctx.font=`bold ${10*s}px Arial`;
+ ctx.fillText(selected==="M5 PRO"?"M5 PRO":"F3+",cx-30*s,wheelY-20*s);
+
+ // Свет от фары
+ ctx.fillStyle="#ffe8a0";
+ ctx.globalAlpha=.12;
+ ctx.beginPath();
+ ctx.moveTo(stemX-74*s,wheelY-326*s);
+ ctx.lineTo(stemX+130*s,wheelY-300*s);
+ ctx.lineTo(stemX+130*s,wheelY-220*s);
+ ctx.closePath();
+ ctx.fill();
+ ctx.globalAlpha=1;
+
+ ctx.restore();
+
+ // Эффект кнопки станта — только визуальная подсветка
+ if(stuntEffect>0){
+  ctx.save();
+  ctx.globalAlpha=stuntEffect;
+  ctx.fillStyle="#e8b6ff";
+  ctx.font="bold 20px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("✨ STYLE!",cx,H*.48);
+  ctx.restore();
+ }
+}
+
+function update(dt){
+ let max=maxSpeed();
+
+ if(gas)speed+=30*dt;
+ else speed-=10*dt;
+
+ if(brake)speed-=65*dt;
+
+ speed=Math.max(0,Math.min(max,speed));
+
+ road+=speed*dt*3.5;
+ suspension+=dt*(3+speed*.07);
+
+ if(stuntEffect>0){
+  stuntEffect=Math.max(0,stuntEffect-dt*1.4);
+ }
+
+ // Заработок за езду
+ if(speed>2){
+  incomeTimer+=dt;
+  let interval=selected==="M5 PRO"?12:5;
+  while(incomeTimer>=1){
+   money+=interval;
+   incomeTimer-=1;
+   save();
+  }
+ }else{
+  incomeTimer=0;
+ }
+
+ updateUI();
+}
+
+function draw(dt){
+ city(dt);
+ scooter();
+}
+
+function loop(time){
+ if(!lastTime)lastTime=time;
+ let dt=Math.min((time-lastTime)/1000,.04);
+ lastTime=time;
+
+ update(dt);
+ draw(dt);
+
+ requestAnimationFrame(loop);
+}
+
+updateUI();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
