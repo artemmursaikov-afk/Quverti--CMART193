@@ -27,28 +27,28 @@ canvas{width:100vw;height:100vh;display:block}
  color:white;align-items:center;justify-content:center;padding:18px;z-index:10
 }
 .panel{
- width:100%;max-width:440px;background:#111c32;
+ width:100%;max-width:420px;background:#111c32;
  border:2px solid #ff922c;border-radius:20px;padding:22px;text-align:center;
  max-height:90vh;overflow-y:auto
 }
 .panel h2{color:#ffad45;margin-top:0}
 .product{
  background:#1c2b46;border:1px solid #53627c;
- border-radius:15px;padding:16px;margin:12px 0
+ border-radius:15px;padding:18px;margin:15px 0
 }
 .product.activeItem{
  border:2px solid #10b981;background:#163042
 }
-.scooterIcon{font-size:52px}
-.product h3{margin:6px 0}
-.product p{color:#ffd18b;font-weight:bold;margin:6px 0}
+.scooterIcon{font-size:60px}
+.product h3{margin:8px}
+.product p{color:#ffd18b;font-weight:bold}
 .stats{font-size:13px;color:#cbd5e1;margin-bottom:12px}
-.actionBtn{
- width:100%;padding:14px;border:0;border-radius:12px;
- background:#0c9b55;color:white;font-weight:bold;font-size:16px;cursor:pointer
+.shopAction{
+ width:100%;padding:15px;border:0;border-radius:12px;
+ background:#0c9b55;color:white;font-weight:bold;font-size:17px;cursor:pointer
 }
 .closeBtn{
- margin-top:10px;background:#b72b35;color:white;
+ margin-top:12px;background:#b72b35;color:white;
  border:0;border-radius:12px;padding:12px 25px;font-weight:bold;cursor:pointer
 }
 #controls{
@@ -78,27 +78,26 @@ canvas{width:100vw;height:100vh;display:block}
  <button class="topBtn" id="shopBtn" onclick="openShop()">🛒 МАГАЗИН</button>
 </div>
 
-<!-- ОКНО МАГАЗИНА -->
 <div class="modal" id="shop">
  <div class="panel">
   <h2>🛒 МАГАЗИН САМОКАТОВ</h2>
   <div>Твой баланс: <b style="color:#ffc16d">$<span id="shopMoney">0</span></b></div>
   <div class="product">
    <div class="scooterIcon">🛵</div>
-   <h3>KugooKirin M5 Pro</h3>
+   <h3>Kugoo M5 Pro</h3>
    <p>Цена: $2000</p>
-   <div class="stats">⚡ Макс. скорость: 95 км/ч | 🚀 Мощный разгон | 💺 Сиденье и кофр</div>
-   <button class="actionBtn" id="buyBtn" onclick="buyScooter()">КУПИТЬ ЗА $2000</button>
+   <div id="productStatus">С сиденьем, кофром и макс. скоростью 95 км/ч!</div>
+   <br>
+   <button class="shopAction" id="buyBtn" onclick="buyScooter()">КУПИТЬ ЗА $2000</button>
   </div>
   <button class="closeBtn" onclick="closeModals()">ЗАКРЫТЬ</button>
  </div>
 </div>
 
-<!-- ОКНО ИНВЕНТАРЯ -->
 <div class="modal" id="inventory">
  <div class="panel" style="border-color:#60a5fa">
   <h2 style="color:#93c5fd">🎒 МОЙ ИНВЕНТАРЬ</h2>
-  <div style="font-size:14px;color:#cbd5e1;margin-bottom:10px">Выбери транспорт для поездки:</div>
+  <div style="font-size:14px;color:#cbd5e1;margin-bottom:10px">Выбери самокат для поездки:</div>
   <div id="invList"></div>
   <button class="closeBtn" onclick="closeModals()">ЗАКРЫТЬ</button>
  </div>
@@ -129,8 +128,8 @@ function saveGame(){
  localStorage.setItem("selectedScooter",selected);
 }
 
-function updateHUD(){
- const isM5 = selected === "KUGOO M5 PRO";
+function updateMoney(){
+ const isM5=selected==="KUGOO M5 PRO";
  document.getElementById("money").textContent=Math.floor(money);
  document.getElementById("shopMoney").textContent=Math.floor(money);
  document.getElementById("modelName").textContent=selected;
@@ -155,18 +154,21 @@ function openInv(){
 }
 
 function updateShop(){
- updateHUD();
+ updateMoney();
  const btn=document.getElementById("buyBtn");
+ const status=document.getElementById("productStatus");
  if(!owned){
   btn.textContent=money>=2000?"КУПИТЬ ЗА $2000":"НЕДОСТАТОЧНО ДЕНЕГ";
   btn.disabled=money<2000;
   btn.style.opacity=money<2000?".5":"1";
   btn.style.background="#0c9b55";
+  status.textContent="С сиденьем, кофром и макс. скоростью 95 км/ч!";
  }else{
   btn.disabled=true;
   btn.style.opacity="1";
   btn.style.background="#334155";
-  btn.textContent="✅ УЖЕ В ИНВЕНТАРЕ";
+  btn.textContent="✅ КУПЛЕНО (В ИНВЕНТАРЕ)";
+  status.textContent="Самокат доступен для выбора в инвентаре!";
  }
 }
 
@@ -177,14 +179,14 @@ function buyScooter(){
  selected="KUGOO M5 PRO";
  saveGame();
  updateShop();
- openInv(); // Сразу открываем инвентарь, чтобы показать новый самокат
+ openInv();
 }
 
 function selectScooter(name){
  if(name==="KUGOO M5 PRO" && !owned)return;
  selected=name;
  saveGame();
- updateHUD();
+ updateMoney();
  renderInventory();
 }
 
@@ -193,9 +195,9 @@ function renderInventory(){
  let html=`
   <div class="product ${selected==='KUGOO NIGHT RIDE'?'activeItem':''}">
    <div class="scooterIcon">🛴</div>
-   <h3>Kugoo Night Ride (Базовый)</h3>
+   <h3>Kugoo Night Ride</h3>
    <div class="stats">Макс. скорость: 60 км/ч | Доход: $5/сек</div>
-   <button class="actionBtn" style="background:${selected==='KUGOO NIGHT RIDE'?'#10b981':'#2563eb'}"
+   <button class="shopAction" style="background:${selected==='KUGOO NIGHT RIDE'?'#10b981':'#2563eb'}"
     onclick="selectScooter('KUGOO NIGHT RIDE')">
     ${selected==='KUGOO NIGHT RIDE'?'✅ ВЫБРАНО':'ВЫБРАТЬ'}
    </button>
@@ -206,9 +208,9 @@ function renderInventory(){
   html+=`
    <div class="product ${selected==='KUGOO M5 PRO'?'activeItem':''}">
     <div class="scooterIcon">🛵</div>
-    <h3>KugooKirin M5 Pro</h3>
+    <h3>Kugoo M5 Pro</h3>
     <div class="stats">⚡ Макс. скорость: 95 км/ч | 💵 Доход: $12/сек</div>
-    <button class="actionBtn" style="background:${selected==='KUGOO M5 PRO'?'#10b981':'#2563eb'}"
+    <button class="shopAction" style="background:${selected==='KUGOO M5 PRO'?'#10b981':'#2563eb'}"
      onclick="selectScooter('KUGOO M5 PRO')">
      ${selected==='KUGOO M5 PRO'?'✅ ВЫБРАНО':'ВЫБРАТЬ'}
     </button>
@@ -218,8 +220,8 @@ function renderInventory(){
   html+=`
    <div class="product" style="opacity:0.6">
     <div class="scooterIcon">🔒</div>
-    <h3>KugooKirin M5 Pro</h3>
-    <div class="stats">Не куплен. Приобрети в магазине за $2000!</div>
+    <h3>Kugoo M5 Pro</h3>
+    <div class="stats">Не куплен. Открой магазин, чтобы купить за $2000!</div>
    </div>
   `;
  }
@@ -318,8 +320,7 @@ function city(){
  }
 }
 
-// КОЛЁСА ОСТАВЛЕНЫ ПОЛНОСТЬЮ БЕЗ ИЗМЕНЕНИЙ
-function wheel(x,y,r){
+function wheel(x,y,r,accentColor){
  ctx.save();ctx.translate(x,y);
  ctx.fillStyle="#080a0d";
  ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
@@ -335,4 +336,5 @@ function wheel(x,y,r){
  }
  ctx.restore();
 
- ctx.fillStyle="#ff9028";
+ ctx.fillStyle=accentColor;
+
