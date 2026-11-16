@@ -195,3 +195,42 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+// ===== СИСТЕМА ПРОМОКОДОВ =====
+
+let usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
+let isAdmin = false;
+
+function redeemCode(code) {
+    code = code.trim();
+
+    if (code === "CMART193") {
+        isAdmin = true;
+        alert("👑 АДМИН-ДОСТУП АКТИВИРОВАН!");
+        showAdmin();
+        return;
+    }
+
+    if (code.toLowerCase() === "quverty") {
+        if (usedCodes.includes("Quverty")) {
+            alert("Этот промокод уже использован!");
+            return;
+        }
+
+        money += 500;
+        usedCodes.push("Quverty");
+        localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
+
+        alert("🎉 Поздравляем! +500 монет!");
+        return;
+    }
+
+    alert("❌ Неверный промокод!");
+}
+
+function showAdmin() {
+    if (!isAdmin) return;
+
+    alert("👑 ПАНЕЛЬ АДМИНИСТРАТОРА\n\nДоступ активирован!");
+}
+
+// ===== КОНЕЦ СИСТЕМЫ =====
