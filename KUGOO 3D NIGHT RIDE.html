@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>KUGOO 3D NIGHT RIDE</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#162238;--card:#1f2f4a;--acc:#42d9ff;--ok:#12a566;--bad:#c93844;--tx:#fff;--mut:#9fb0c8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+html,body{height:100%}
+body{margin:0;overflow:hidden;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;touch-action:none}
+canvas{display:block;position:fixed;inset:0}
+#hud{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:10px;right:10px;display:none;justify-content:space-between;gap:8px;pointer-events:none}
+.panel{background:#0b1226cc;padding:8px 12px;border:1px solid #ffffff30;border-radius:12px;font-weight:700;font-size:14px;line-height:1.35}
+#pauseBtn{pointer-events:auto;width:46px;padding:0;text-align:center;font-size:20px}
+#controls{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;display:none;justify-content:space-between;align-items:flex-end;padding:0 12px}
+#controls .grp{display:flex;gap:8px}
+button{color:#fff;background:var(--card);border:1px solid #ffffff40;border-radius:14px;padding:14px;font-size:16px;font-weight:700;touch-action:none;font-family:inherit;cursor:pointer}
+button:active{filter:brightness(1.4)}
+button:disabled{opacity:.45}
+.c{min-width:64px;height:64px;font-size:24px}
+.gas{background:var(--ok);min-width:92px;height:64px}
+.brake{background:var(--bad);min-width:92px;height:64px}
+.menu{position:absolute;inset:0;background:#060a16ee;display:flex;align-items:center;justify-content:center;z-index:5;padding:12px}
+.box{background:var(--panel);border:1px solid #ffffff30;padding:18px;border-radius:20px;width:100%;max-width:400px;text-align:center;max-height:92%;overflow:auto}
+.box>button{width:100%;margin:5px 0}
+h1{color:var(--acc);margin:0 0 6px;font-size:24px}
+h2{margin:0 0 4px;font-size:18px}
+p{margin:6px 0;color:var(--mut)}
+.hidden{display:none!important}
+.card{background:var(--card);padding:12px;margin:10px 0;border-radius:14px;text-align:left}
+.card button{width:100%;margin-top:8px}
+.bar{height:7px;background:#0b1226;border-radius:4px;margin:3px 0 7px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #ffffff18}
+.row button{padding:8px 14px;min-width:84px}
+.tag{font-size:12px;color:var(--ok);font-weight:700}
+input{width:100%;padding:13px;background:var(--bg);border:1px solid var(--acc);border-radius:10px;color:#fff;font-size:17px;text-align:center;margin:8px 0;user-select:text}
+.big{font-size:34px;color:var(--acc);font-weight:800;margin:6px 0}
+#toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#000c;border:1px solid #ffffff40;padding:8px 14px;border-radius:12px;z-index:9;display:none;font-weight:700}
+i[data-ic]{display:inline-flex;width:1.25em;height:1.25em;vertical-align:-.25em;margin-right:.4em}
+i[data-ic] svg{width:100%;height:100%}
+#joy{width:132px;height:132px;border-radius:50%;background:#0b122699;border:2px solid #ffffff40;position:relative;touch-action:none}
+#knob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:#42d9ffcc;border:2px solid #fff8;pointer-events:none}
+.rt{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ib{display:flex;align-items:center;justify-content:center;padding:0}
+.ib i[data-ic]{width:30px;height:30px;margin:0}
+.st{width:56px;height:56px;background:#4a3a8a}
+#pauseBtn i[data-ic]{margin:0}
+</style>
+</head>
+<body>
+<div id="hud">
+ <div class="panel"><i data-ic="scooter"></i><span id="hModel">M2+</span><br><i data-ic="coin"></i><span id="hMoney">0</span> $</div>
+ <div class="panel" style="text-align:center"><i data-ic="dist"></i><span id="hDist">0</span> м<br><i data-ic="trophy"></i><span id="hBest">0</span> м</div>
+ <div class="panel"><i data-ic="bolt"></i><span id="hSpeed">0</span> км/ч</div>
+ <button class="panel" id="pauseBtn"><i data-ic="pause"></i></button>
+</div>
+<div id="toast"></div>
+<div id="controls">
+ <div id="joy"><div id="knob"></div></div>
+ <div class="rt"><div class="grp"><button class="ib st" id="st1"><i data-ic="wheelie"></i></button><button class="ib st" id="st2"><i data-ic="jump"></i></button><button class="ib st" id="st3"><i data-ic="spin"></i></button></div><div class="grp"><button class="brake ib" id="brake"><i data-ic="brake"></i></button><button class="gas ib" id="gas"><i data-ic="gas"></i></button></div></div>
+</div>
+
+<div id="menu" class="menu"><div class="box">
+ <h1>KUGOO 3D NIGHT RIDE</h1>
+ <p>Уворачивайся от препятствий, собирай монеты и покупай новые самокаты.</p>
+ <div class="card"><b id="mModel"></b><br><span id="mStats"></span></div>
+ <button data-act="play" style="background:var(--ok)"><i data-ic="play"></i>ИГРАТЬ</button>
+ <button data-go="shop"><i data-ic="cart"></i>МАГАЗИН И ГАРАЖ</button>
+ <button data-go="promo"><i data-ic="gift"></i>ПРОМОКОД</button>
+ <button data-go="settings"><i data-ic="gear"></i>НАСТРОЙКИ</button>
+ <button data-go="help"><i data-ic="help"></i>КАК ИГРАТЬ</button>
+</div></div>
+
+<div id="shop" class="menu hidden"><div class="box">
+ <h1><i data-ic="cart"></i>МАГАЗИН</h1><p>Баланс: <b id="sMoney">0</b> $</p>
+ <div id="shopItems"></div>
+ <button data-go="menu">НАЗАД</button>
+</div></div>
+
+<div id="promo" class="menu hidden"><div class="box">
+ <h1><i data-ic="gift"></i>ПРОМОКОД</h1>
+ <input id="promoInput" placeholder="ВВЕДИ КОД" autocomplete="off">
+ <button data-act="redeem">АКТИВИРОВАТЬ</button>
+ <p id="promoMsg"></p>
+ <button data-go="menu">НАЗАД</button>
+</div></div>
+
+<div id="settings" class="menu hidden"><div class="box">
+ <h1><i data-ic="gear"></i>НАСТРОЙКИ</h1>
+ <div class="row"><span>Звук</span><button data-set="sound" id="setSound"></button></div>
+ <div class="row"><span>Графика</span><button data-set="q" id="setQ"></button></div>
+ <div class="row"><span>Автогаз</span><button data-set="auto" id="setAuto"></button></div>
+ <div class="row"><span>Тряска камеры</span><button data-set="shake" id="setShake"></button></div>
+ <div class="row"><span>Сложность</span><button data-set="diff" id="setDiff"></button></div>
+ <button data-act="reset" style="background:var(--bad)"><i data-ic="trash"></i>СБРОСИТЬ ПРОГРЕСС</button>
+ <button data-go="menu">НАЗАД</button>
+</div></div>
+
+<div id="help" class="menu hidden"><div class="box">
+ <h1><i data-ic="help"></i>КАК ИГРАТЬ</h1>
+ <div class="card"><b>Джойстик</b><br>влево / вправо — сменить полосу<br>вверх — газ, вниз — тормоз</div>
+ <div class="card"><b>Трюки</b><br><i data-ic="wheelie"></i>держи — езда на заднем колесе, идут монеты<br><i data-ic="jump"></i>прыжок через барьеры<br><i data-ic="spin"></i>в прыжке — вращение, бонус при приземлении</div>
+ <div class="card">Собирай монеты и не врезайся в красные барьеры. На компьютере: A/D, W/S.</div>
+ <button data-go="menu">НАЗАД</button>
+</div></div>
+
+<div id="over" class="menu hidden"><div class="box">
+ <h1><i data-ic="burst"></i>АВАРИЯ!</h1>
+ <div class="big"><span id="oDist">0</span> м</div>
+ <p id="oBest"></p><p>Собрано монет: <b id="oCoins">0</b></p>
+ <button data-act="play" style="background:var(--ok)"><i data-ic="retry"></i>ЕЩЁ РАЗ</button>
+ <button data-go="menu">В МЕНЮ</button>
+</div></div>
+
+<div id="admin" class="menu hidden"><div class="box">
+ <h1><i data-ic="crown"></i>ADMIN PANEL</h1><p>Администратор активирован!</p>
+ <button data-act="adm1">+1000 $</button>
+ <button data-act="adm2">ОТКРЫТЬ ВСЕ САМОКАТЫ</button>
+ <button data-go="menu">ЗАКРЫТЬ</button>
+</div></div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from "three";
+const $=id=>document.getElementById(id);
+const IC={scooter:"<circle cx='6' cy='18' r='2.5'/><circle cx='19' cy='18' r='2.5'/><path d='M8.5 18h8M17 18l-2-12h4'/>",coin:"<circle cx='12' cy='12' r='8'/><path d='M12 7v10'/>",dist:"<path d='M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4'/>",trophy:"<path d='M8 4h8v5a4 4 0 01-8 0zM8 6H4v1a4 4 0 004 4M16 6h4v1a4 4 0 01-4 4M12 13v4M8 20h8'/>",bolt:"<path d='M13 3L5 14h6l-1 7 8-11h-6z'/>",pause:"<path d='M8 5v14M16 5v14'/>",play:"<path d='M7 4l13 8-13 8z'/>",cart:"<circle cx='9' cy='20' r='1.5'/><circle cx='18' cy='20' r='1.5'/><path d='M2 3h3l3 12h11l2-8H6'/>",gift:"<path d='M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-3-4-6-1-3 0M12 7c3-4 6-1 3 0'/>",gear:"<circle cx='12' cy='12' r='3'/><path d='M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2'/>",help:"<circle cx='12' cy='12' r='9'/><path d='M9.5 9a2.5 2.5 0 115 0c0 2-2.5 2-2.5 4M12 17v.5'/>",gas:"<path d='M9 3h6l2 14a3 3 0 01-3 3h-4a3 3 0 01-3-3z'/><path d='M10 8h4M10 12h4'/>",brake:"<rect x='6' y='6' width='12' height='12' rx='2'/>",wheelie:"<circle cx='6' cy='18' r='3'/><circle cx='19' cy='8' r='3'/><path d='M6 18l9-6'/>",jump:"<path d='M12 20V6M6 12l6-6 6 6'/>",spin:"<path d='M20 12a8 8 0 11-3-6.2M20 4v5h-5'/>",burst:"<path d='M12 2l2 6 6-2-3 6 5 3-6 1 1 6-5-4-5 4 1-6-6-1 5-3-3-6 6 2z'/>",retry:"<path d='M4 12a8 8 0 108-8M4 4v5h5'/>",crown:"<path d='M3 8l4 4 5-7 5 7 4-4-2 11H5z'/>",trash:"<path d='M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13'/>",check:"<path d='M5 12l5 5 9-10'/>"};
+function icons(root){(root||document).querySelectorAll("[data-ic]").forEach(e=>{e.innerHTML="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>"+(IC[e.dataset.ic]||"")+"</svg>"})}
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+
+// ---------- Данные ----------
+const MODELS={
+ "M2+":{price:0,desc:"Компактный городской самокат",max:40,acc:10,hand:.8,info:["Скорость",40,"Разгон",10,"Манёвр",8]},
+ "F3+":{price:1500,desc:"10″ колёса, маятниковая подвеска",max:50,acc:13,hand:1,info:["Скорость",50,"Разгон",13,"Манёвр",10]},
+ "M5 PRO":{price:2000,desc:"Массивная рама, большие колёса",max:62,acc:16,hand:.9,info:["Скорость",62,"Разгон",16,"Манёвр",9]}
+};
+let money=ld("k3money",0),owned=ld("k3owned",["M2+"]),codes=ld("k3codes",[]),cur=ld("k3model","M2+"),best=ld("k3best",0);
+let S=Object.assign({sound:1,q:1,auto:0,shake:1,diff:1},ld("k3set",{}));
+if(!MODELS[cur]||!owned.includes(cur))cur="M2+";
+const save=()=>{sv("k3money",Math.floor(money));sv("k3owned",owned);sv("k3model",cur);sv("k3codes",codes);sv("k3best",Math.floor(best));sv("k3set",S)};
+
+// ---------- Звук ----------
+let ac=null;
+function beep(f,d,t="square",v=.07){
+ if(!S.sound)return;
+ try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+  const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;
+  o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}
+}
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",1800)}
+
+// ---------- Экраны ----------
+const screens=["menu","shop","promo","settings","over","admin","help"];
+let playing=false,isAdmin=false;
+function show(id){screens.forEach(s=>$(s).classList.add("hidden"));if(id)$(id).classList.remove("hidden");
+ if(id==="menu")refreshMenu();if(id==="shop")renderShop();if(id==="settings")renderSettings();
+ const g=!id;$("hud").style.display=g?"flex":"none";$("controls").style.display=g?"flex":"none";}
+function refreshMenu(){
+ playing=false;const m=MODELS[cur];
+ $("mModel").textContent="KUGOO "+cur;$("mStats").textContent="Макс. "+m.max+" км/ч · Рекорд "+Math.floor(best)+" м · "+Math.floor(money)+" $";
+}
+function renderShop(){
+ $("sMoney").textContent=Math.floor(money);const box=$("shopItems");box.innerHTML="";
+ for(const n in MODELS){
+  const m=MODELS[n],has=owned.includes(n),card=document.createElement("div");card.className="card";
+  const bars=[0,2,4].map(i=>m.info[i]+"<div class='bar'><i style='width:"+Math.min(100,m.info[i+1]/(i==0?62:i==2?16:10)*100)+"%'></i></div>").join("");
+  card.innerHTML="<h2>KUGOO "+n+"</h2><p>"+m.desc+"</p>"+bars+(has?(n===cur?"<span class='tag'><i data-ic='check'></i>ВЫБРАН</span>":""):"<b>"+m.price+" $</b>");
+  const b=document.createElement("button");
+  if(has){b.textContent=n===cur?"ВЫБРАН":"ВЫБРАТЬ";b.disabled=n===cur;b.onclick=()=>{cur=n;buildScooter();save();renderShop()}}
+  else{b.textContent="КУПИТЬ за "+m.price+" $";b.disabled=money<m.price;b.style.background="var(--ok)";
+   b.onclick=()=>{if(money<m.price)return;money-=m.price;owned.push(n);cur=n;buildScooter();save();beep(660,.2);toast(n+" куплен!");renderShop()}}
+  card.appendChild(b);box.appendChild(card);icons(card);
+ }
+}
+const DIFF=["Лёгко","Нормально","Хардкор"];
+function renderSettings(){
+ $("setSound").textContent=S.sound?"ВКЛ":"ВЫКЛ";$("setQ").textContent=S.q?"ВЫСОКАЯ":"НИЗКАЯ";
+ $("setAuto").textContent=S.auto?"ВКЛ":"ВЫКЛ";$("setShake").textContent=S.shake?"ВКЛ":"ВЫКЛ";$("setDiff").textContent=DIFF[S.diff];
+}
+function applyQuality(){
+ renderer.setPixelRatio(S.q?Math.min(devicePixelRatio,1.7):1);renderer.setSize(innerWidth,innerHeight);
+ sun.castShadow=!!S.q;renderer.shadowMap.enabled=!!S.q;scene.traverse(o=>{if(o.material)o.material.needsUpdate=true});
+}
+
+document.addEventListener("click",e=>{
+ const t=e.target.closest("button");if(!t)return;
+ if(t.dataset.go){const g=t.dataset.go;show(g==="menu"?"menu":g)}
+ if(t.dataset.set){const k=t.dataset.set;S[k]=k==="diff"?(S.diff+1)%3:S[k]?0:1;save();renderSettings();if(k==="q")applyQuality();beep(500,.08)}
+ const a=t.dataset.act;
+ if(a==="play")startRun();
+ if(a==="redeem")redeem();
+ if(a==="reset"&&confirm("Удалить весь прогресс?")){money=0;owned=["M2+"];codes=[];cur="M2+";best=0;save();buildScooter();toast("Прогресс сброшен")}
+ if(a==="adm1"&&isAdmin){money+=1000;save();toast("+1000 $")}
+ if(a==="adm2"&&isAdmin){owned=Object.keys(MODELS);save();toast("Все самокаты открыты")}
+});
+$("pauseBtn").onclick=()=>{endRun(false);show("menu")};
+
+function redeem(){
+ const c=$("promoInput").value.trim(),msg=$("promoMsg");
+ if(c==="CMART193"){isAdmin=true;msg.textContent="АДМИН АКТИВИРОВАН!";setTimeout(()=>show("admin"),400);return}
+ if(c.toLowerCase()==="quverty"){
+  if(codes.includes("Quverty")){msg.textContent="Код уже использован!";return}
+  money+=500;codes.push("Quverty");save();msg.textContent="+500 $";beep(800,.2);return}
+ msg.textContent="Неверный код";
+}
+
+// ---------- 3D ----------
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1226);scene.fog=new THREE.Fog(0x0b1226,25,95);
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,200);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x9ebfff,0x26303b,1.6));
+const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(5,12,6);sun.castShadow=true;
+sun.shadow.camera.left=-8;sun.shadow.camera.right=8;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.mapSize.set(1024,1024);
+scene.add(sun);scene.add(sun.target);
+
+const mat=(c,m=0,r=.6)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r});
+const black=mat(0x10141b,.3),rubber=mat(0x080b10),metal=mat(0xaab6c5,.8,.4),blue=mat(0x168dca,.35),orange=mat(0xff8b24,.3),white=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffee,emissiveIntensity:1}),dark=mat(0x2a3a52);
+const LANES=[-2,0,2];
+
+const road=new THREE.Mesh(new THREE.PlaneGeometry(6.4,300),mat(0x2a2e38));road.rotation.x=-Math.PI/2;road.position.z=-100;road.receiveShadow=true;scene.add(road);
+const side=new THREE.Mesh(new THREE.PlaneGeometry(60,300),mat(0x1a2030));side.rotation.x=-Math.PI/2;side.position.set(0,-.05,-100);scene.add(side);
+const marks=[];
+for(let l of [-1,1])for(let i=0;i<20;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.12,.015,2),mat(0xf4d77c));m.position.set(l,.01,-i*6);scene.add(m);marks.push(m)}
+const buildings=[];
+for(let i=0;i<28;i++){
+ const h=3+Math.random()*10,sx=i%2?1:-1,b=new THREE.Mesh(new THREE.BoxGeometry(3.2,h,3.4),mat(i%3?0x25344b:0x1a263b));
+ b.position.set(sx*(6.5+Math.random()*1.5),h/2,-Math.floor(i/2)*9);scene.add(b);b.userData.sx=sx;buildings.push(b);
+ for(let y=1;y<h-.5;y+=1.6){const w=new THREE.Mesh(new THREE.BoxGeometry(.5,.5,.05),new THREE.MeshBasicMaterial({color:Math.random()>.35?0xffcf66:0x1d2a40}));
+  w.position.set(-sx*1.64,y-h/2,0);w.rotation.y=sx>0?-Math.PI/2:Math.PI/2;b.add(w)}
+}
+const lamps=[];
+for(let i=0;i<10;i++)for(let sx of [-1,1]){
+ const g=new THREE.Group(),p=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,4),metal);p.position.y=2;g.add(p);
+ const l=new THREE.Mesh(new THREE.SphereGeometry(.16,10,10),new THREE.MeshBasicMaterial({color:0xffe9a8}));l.position.set(-sx*.3,4,0);g.add(l);
+ g.position.set(sx*3.6,0,-i*15);scene.add(g);lamps.push(g)}
+
+// Самокат
+let rider=new THREE.Group(),scooter,wheels=[],susp=[];scene.add(rider);
+function box(p,x,y,z,sx,sy,sz,m){const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o}
+function rod(p,a,b,r,m){const s=new THREE.Vector3(...a),e=new THREE.Vector3(...b),d=new THREE.Vector3().subVectors(e,s),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),12),m);
+ o.position.copy(s).add(e).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());o.castShadow=true;p.add(o);return o}
+function wheel(p,x,r){
+ const g=new THREE.Group();g.position.set(x,r,0);
+ const t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,r*.55,32),rubber);t.rotation.x=Math.PI/2;t.castShadow=true;g.add(t);
+ const h=new THREE.Mesh(new THREE.CylinderGeometry(r*.4,r*.4,r*.6,24),metal);h.rotation.x=Math.PI/2;g.add(h);
+ const k=new THREE.Mesh(new THREE.BoxGeometry(r*1.3,r*.12,r*.62),blue);g.add(k);
+ const f=new THREE.Mesh(new THREE.TorusGeometry(r*1.08,.04,8,24,Math.PI),black);f.position.copy(g.position);f.position.x-=x;f.rotation.set(0,0,0);p.add(f);f.position.set(x,r,0);
+ p.add(g);wheels.push(g)}
+function buildScooter(){
+ rider.remove(scooter);scooter=new THREE.Group();rider.add(scooter);wheels=[];susp=[];
+ const F3=cur==="F3+",M5=cur==="M5 PRO",r=F3?.39:M5?.43:.3,L=F3?1.95:M5?2.05:1.65,col=F3?blue:M5?orange:dark;
+ wheel(scooter,-L*.42,r);wheel(scooter,L*.42,r);
+ box(scooter,0,r+.18,0,L,.16,.4,M5?black:col);box(scooter,0,r+.27,0,L*.7,.03,.32,black);
+ rod(scooter,[L*.4,r+.2,0],[L*.31,1.55,0],M5?.075:.05,metal);
+ rod(scooter,[L*.31,1.55,-.35],[L*.31,1.55,.35],.04,black);
+ box(scooter,L*.31,1.55,-.4,.14,.07,.14,black);box(scooter,L*.31,1.55,.4,.14,.07,.14,black);
+ const hl=new THREE.Mesh(new THREE.SphereGeometry(.1,14,14),white);hl.position.set(L*.34,1.38,0);scooter.add(hl);
+ if(!F3){rod(scooter,[-.3,r+.25,0],[-.3,1.1,0],.05,metal);box(scooter,-.3,1.15,0,.6,.12,.34,black)}
+ if(F3){[[0,-L*.42,-L*.18],[1,L*.42,L*.15]].forEach(([wi,xw,xj])=>{const pv=new THREE.Group();pv.position.set(xj,r+.45,0);scooter.add(pv);rod(pv,[xw-xj,-.3,0],[0,0,0],.05,orange);susp.push({pv,w:wheels[wi],dx:xw-xj,r})});box(scooter,0,r+.1,0,L*1.05,.1,.5,blue)}
+ if(M5){box(scooter,-L*.36,.95,0,.55,.45,.45,black);box(scooter,0,r+.33,0,L*.85,.07,.48,orange)}
+ scooter.rotation.y=Math.PI/2;
+}
+buildScooter();
+
+// Объекты
+const obsG=new THREE.BoxGeometry(1.3,.9,.5),coinG=new THREE.CylinderGeometry(.35,.35,.08,20),coinM=new THREE.MeshStandardMaterial({color:0xffd23f,emissive:0xaa7700,metalness:.8,roughness:.3}),obsM=mat(0xd23a3a,.2),stripeM=mat(0xffffff);
+const obs=[],coins=[];
+function spawn(){
+ const z=-95,free=Math.floor(Math.random()*3),n=S.diff===0?1:S.diff===1?(Math.random()<.5?1:2):2;
+ const blocked=[0,1,2].filter(i=>i!==free).sort(()=>Math.random()-.5).slice(0,n);
+ blocked.forEach(i=>{const g=new THREE.Group(),b=new THREE.Mesh(obsG,obsM);b.position.y=.55;b.castShadow=true;g.add(b);
+  const s=new THREE.Mesh(new THREE.BoxGeometry(1.32,.18,.52),stripeM);s.position.y=.6;g.add(s);g.position.set(LANES[i],0,z);scene.add(g);obs.push(g)});
+ if(Math.random()<.8)for(let k=0;k<4;k++){const c=new THREE.Mesh(coinG,coinM);c.rotation.x=Math.PI/2;c.position.set(LANES[free],.8,z-k*2.2);scene.add(c);coins.push(c)}
+}
+function clearObjects(){[...obs,...coins].forEach(o=>scene.remove(o));obs.length=0;coins.length=0}
+
+// ---------- Управление ----------
+let joyG=false,joyB=false,jy=0,jv=0,spun=0,spinning=false,spinA=0,wheelie=false,pitch=0,suspPh=0,speed=0,gas=false,brake=false,lane=1,x=0,dist=0,earned=0,spawnT=0,shake=0;
+function steer(d){if(!playing)return;const n=lane+d;if(n>=0&&n<=2){lane=n;beep(420,.05,"sine",.05)}}
+function hold(id,cb){const b=$(id);b.addEventListener("pointerdown",e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}cb(true)});
+ ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,()=>cb(false)))}
+hold("gas",v=>gas=v);hold("brake",v=>brake=v);hold("st1",v=>wheelie=v);
+$("st2").addEventListener("pointerdown",e=>{e.preventDefault();if(playing&&jy===0&&speed>3){jv=7.5;beep(600,.1,"sine")}});
+$("st3").addEventListener("pointerdown",e=>{e.preventDefault();if(playing&&jy>.15&&!spinning){spinning=true;spinA=0}});
+const joy=$("joy"),knob=$("knob");let jid=null,jlock=false;
+function jmove(e){const r=joy.getBoundingClientRect(),R=r.width/2,mx=R*.6;let dx=e.clientX-(r.left+R),dy=e.clientY-(r.top+R);const l=Math.hypot(dx,dy);if(l>mx){dx*=mx/l;dy*=mx/l}
+ knob.style.transform="translate("+dx+"px,"+dy+"px)";const nx=dx/mx,ny=dy/mx;
+ if(Math.abs(nx)>.6&&!jlock){jlock=true;steer(nx>0?1:-1)}if(Math.abs(nx)<.3)jlock=false;joyG=ny<-.5;joyB=ny>.5}
+function jend(){jid=null;knob.style.transform="";jlock=false;joyG=joyB=false}
+joy.addEventListener("pointerdown",e=>{e.preventDefault();jid=e.pointerId;try{joy.setPointerCapture(jid)}catch(_){}jmove(e)});
+joy.addEventListener("pointermove",e=>{if(e.pointerId===jid)jmove(e)});
+["pointerup","pointercancel"].forEach(ev=>joy.addEventListener(ev,jend));
+addEventListener("contextmenu",e=>e.preventDefault());addEventListener("dragstart",e=>e.preventDefault());
+addEventListener("selectstart",e=>{const t=e.target.nodeType===1?e.target:e.target.parentElement;if(!(t&&t.closest("input")))e.preventDefault()});
+$("left")&&0;
+$("right")&&0;
+addEventListener("keydown",e=>{const k=e.key.toLowerCase();
+ if(k==="arrowleft"||k==="a")steer(-1);if(k==="arrowright"||k==="d")steer(1);
+ if(k==="arrowup"||k==="w")gas=true;if(k==="arrowdown"||k==="s"||k===" ")brake=true;if(k==="escape"&&playing){endRun(false);show("menu")}});
+addEventListener("keyup",e=>{const k=e.key.toLowerCase();if(k==="arrowup"||k==="w")gas=false;if(k==="arrowdown"||k==="s"||k===" ")brake=false});
+let sx0=null;
+addEventListener("touchstart",e=>{if(playing&&!e.target.closest("button,#joy"))sx0=e.touches[0].clientX},{passive:true});
+addEventListener("touchend",e=>{if(sx0===null)return;const dx=e.changedTouches[0].clientX-sx0;if(Math.abs(dx)>40)steer(dx>0?1:-1);sx0=null},{passive:true});
+
+function startRun(){
+ clearObjects();jy=0;jv=0;spun=0;spinning=false;spinA=0;speed=0;lane=1;x=0;dist=0;earned=0;spawnT=0;gas=false;brake=false;playing=true;show(null);
+ beep(520,.15);
+}
+function endRun(crash){
+ playing=false;gas=brake=false;joyG=joyB=false;
+ if(dist>best)best=dist;save();
+ if(crash){beep(110,.5,"sawtooth",.12);shake=1;$("oDist").textContent=Math.floor(dist);$("oCoins").textContent=Math.floor(earned);
+  $("oBest").textContent=dist>=best&&dist>1?"Новый рекорд!":"Рекорд: "+Math.floor(best)+" м";show("over")}
+}
+
+// ---------- Цикл ----------
+let prev=performance.now();
+function frame(now){
+ requestAnimationFrame(frame);
+ const dt=Math.min((now-prev)/1000,.05);prev=now;
+ const m=MODELS[cur],diffK=[.85,1,1.2][S.diff];
+ if(playing){
+  if(jv!==0||jy>0){jv-=22*dt;jy+=jv*dt;if(jy<=0){jy=0;jv=0;if(spun>0||spinning){const bn=spun*40;if(bn){money+=bn;earned+=bn;toast("+"+bn+" $");beep(1000,.25,"sine")}spun=0;spinning=false;spinA=0}}}
+  if(spinning){spinA+=dt*10;if(spinA>=Math.PI*2){spinA=0;spinning=false;spun++}}
+  if(wheelie&&speed>8&&jy===0){money+=dt*6;earned+=dt*6}
+  if(gas||joyG||S.auto)speed=Math.min(m.max,speed+m.acc*dt);else speed=Math.max(0,speed-3*dt);
+  if(brake||joyB)speed=Math.max(0,speed-24*dt);
+  const v=speed*.5*diffK,step=v*dt;
+  dist+=step;
+  const gain=speed>1?dt*(1+speed/40):0;money+=gain;earned+=gain;
+  spawnT-=step;if(spawnT<=0){spawn();spawnT=Math.max(14,34-speed*.3)}
+  for(let i=obs.length-1;i>=0;i--){const o=obs[i];o.position.z+=step;
+   if(o.position.z>-.9&&o.position.z<.9&&Math.abs(o.position.x-x)<1.0&&speed>0&&jy<.6){endRun(true);break}
+   if(o.position.z>10){scene.remove(o);obs.splice(i,1)}}
+  for(let i=coins.length-1;i>=0;i--){const c=coins[i];c.position.z+=step;c.rotation.z+=dt*4;
+   if(Math.abs(c.position.z)<.9&&Math.abs(c.position.x-x)<1){money+=10;earned+=10;beep(900+Math.random()*200,.1,"sine",.06);scene.remove(c);coins.splice(i,1)}
+   else if(c.position.z>10){scene.remove(c);coins.splice(i,1)}}
+  marks.forEach(k=>{k.position.z+=step;if(k.position.z>6)k.position.z-=120});
+  buildings.forEach(b=>{b.position.z+=step;if(b.position.z>8)b.position.z-=126});
+  lamps.forEach(l=>{l.position.z+=step;if(l.position.z>8)l.position.z-=150});
+  wheels.forEach(w=>w.rotation.z-=v*dt*2.2);
+ }
+ const target=LANES[lane],prevX=x;x+=(target-x)*Math.min(1,dt*10*m.hand);
+ pitch+=((wheelie&&speed>8&&jy<.1?.5:0)-pitch)*Math.min(1,dt*8);
+ rider.position.set(x,jy+Math.sin(pitch)*.85,0);rider.rotation.x=pitch;
+ rider.rotation.z=-(target-x)*.12;rider.rotation.y=-(target-prevX)*.04-(target-x)*.06+spinA;
+ suspPh+=dt*(3+speed*.4);
+ susp.forEach((s,i)=>{const a=speed>.5?Math.sin(suspPh+i*1.7)*.17*Math.min(1,speed/18):0;s.pv.rotation.z=a;s.w.position.y=s.r+s.dx*Math.sin(a)});
+ camera.position.x=x*.55;camera.position.y=3.2+speed*.004;camera.position.z=7.2+speed*.01;
+ let sh=0;if(shake>0){sh=S.shake?shake*.25:0;shake=Math.max(0,shake-dt*2)}
+ camera.position.x+=(Math.random()-.5)*sh;camera.position.y+=(Math.random()-.5)*sh;
+ camera.lookAt(x*.4,1,-7);camera.fov=60+speed*.12;camera.updateProjectionMatrix();
+ sun.position.set(x+5,12,6);sun.target.position.set(x,0,0);
+ $("hMoney").textContent=Math.floor(money);$("hSpeed").textContent=Math.floor(speed);$("hModel").textContent=cur;
+ $("hDist").textContent=Math.floor(dist);$("hBest").textContent=Math.floor(Math.max(best,dist));
+ renderer.render(scene,camera);
+}
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+applyQuality();camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+icons();refreshMenu();requestAnimationFrame(frame);
+setInterval(()=>{if(playing)save()},5000);
+</script>
+</body>
+</html>
