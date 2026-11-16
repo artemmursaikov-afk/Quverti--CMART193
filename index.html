@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,26 +7,24 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101522;color:white;font-family:Arial;overflow:hidden;touch-action:none}
-canvas{display:block;width:100vw;height:100vh}
+canvas{width:100vw;height:100vh;display:block}
 #hud{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
-.panel{background:#111d;border:1px solid #ffffff33;padding:10px 14px;border-radius:12px;font-weight:bold}
-#controls{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:space-between;padding:0 20px;align-items:end}
-.group{display:flex;gap:10px}
-button{border:1px solid #ffffff55;background:#202e40;color:white;border-radius:14px;padding:15px;font-weight:bold;font-size:15px;min-width:65px;touch-action:none}
+.panel{background:#101cdd;padding:11px;border-radius:12px;font-weight:bold}
+#controls{position:absolute;bottom:18px;left:0;right:0;display:none;justify-content:space-between;padding:0 15px}
+button{background:#26364c;color:white;border:1px solid #ffffff55;border-radius:13px;padding:15px;font-weight:bold;margin:5px}
 button:active{filter:brightness(1.5)}
 .gas{background:#087b49}
 .brake{background:#a52b36}
-.stunt{background:#7139a7}
 #menu,#shop,#promo,#admin{
 position:absolute;inset:0;background:#080d18ed;
-display:flex;align-items:center;justify-content:center;z-index:5;
+display:flex;align-items:center;justify-content:center;z-index:5
 }
 #shop,#promo,#admin{display:none}
-.box{background:#182438;border:1px solid #ffffff33;padding:24px;border-radius:22px;width:88%;max-width:380px;text-align:center}
+.box{background:#182438;border:1px solid #ffffff44;padding:22px;border-radius:20px;width:88%;max-width:390px;text-align:center;max-height:90vh;overflow:auto}
 h1{color:#42d9ff}
-.box button{width:100%;margin:6px 0}
-input{width:100%;padding:15px;border-radius:12px;border:1px solid #42d9ff;background:#101522;color:white;font-size:17px;text-align:center;margin:12px 0}
-.small{font-size:12px;color:#aaa}
+.box button{width:100%;display:block}
+input{width:90%;padding:13px;background:#101522;color:white;border:1px solid #42d9ff;border-radius:10px;text-align:center;font-size:17px}
+.card{background:#26364c;border-radius:12px;padding:10px;margin:10px 0}
 </style>
 </head>
 <body>
@@ -35,55 +32,62 @@ input{width:100%;padding:15px;border-radius:12px;border:1px solid #42d9ff;backgr
 <canvas id="game"></canvas>
 
 <div id="hud">
- <div class="panel">🛴 M2+ NIGHT RIDE<br>💰 <span id="money">0</span></div>
+ <div class="panel">🛴 <span id="modelName">M2+</span><br>💰 <span id="money">0</span>$</div>
  <div class="panel">⚡ <span id="speed">0</span> км/ч</div>
 </div>
 
-<div id="controls" style="display:none">
- <div class="group">
+<div id="controls">
+ <div>
   <button class="brake" id="brake">ТОРМОЗ</button>
-  <button class="stunt" id="stunt">СТАНТ</button>
  </div>
  <button class="gas" id="gas">ГАЗ</button>
 </div>
 
 <div id="menu">
  <div class="box">
-  <h1>M2+ NIGHT RIDE</h1>
-  <p>Добро пожаловать в город!</p>
+  <h1>NIGHT RIDE</h1>
+  <h2>🛴 ГОРОДСКИЕ ПОЕЗДКИ</h2>
   <button onclick="startGame()">▶ ИГРАТЬ</button>
   <button onclick="openShop()">🛒 МАГАЗИН</button>
-  <button onclick="openPromo()">🎁 ПРОМОКОДЫ</button>
-  <p class="small">Зарабатывай 5 монет за секунду езды!</p>
+  <button onclick="openPromo()">🎁 ПРОМОКОД</button>
  </div>
 </div>
 
 <div id="shop">
  <div class="box">
   <h1>🛒 МАГАЗИН</h1>
-  <h2>🛴 M2+</h2>
-  <p>Твой основной самокат</p>
-  <button onclick="closeShop()">НАЗАД</button>
+  <div class="card">
+   <h2>KUGOO M2+</h2>
+   <p>Компактный городской самокат с сиденьем</p>
+   <p>Цена: БЕСПЛАТНО</p>
+   <button onclick="selectModel('M2+')">ВЫБРАТЬ</button>
+  </div>
+  <div class="card">
+   <h2>KUGOO M5 PRO</h2>
+   <p>Большой мощный самокат с массивной рамой</p>
+   <p>Цена: 2000$</p>
+   <button onclick="buyM5()">КУПИТЬ / ВЫБРАТЬ</button>
+  </div>
+  <button onclick="backMenu()">НАЗАД</button>
  </div>
 </div>
 
 <div id="promo">
  <div class="box">
   <h1>🎁 ПРОМОКОДЫ</h1>
-  <p>Введи свой код:</p>
-  <input id="promoInput" placeholder="ВВЕДИ ПРОМОКОД">
+  <input id="promoInput" placeholder="Введи промокод">
   <button onclick="redeemCode()">АКТИВИРОВАТЬ</button>
   <p id="promoMessage"></p>
-  <button onclick="closePromo()">НАЗАД</button>
+  <button onclick="backMenu()">НАЗАД</button>
  </div>
 </div>
 
 <div id="admin">
  <div class="box">
   <h1>👑 ADMIN PANEL</h1>
-  <p>Добро пожаловать, администратор!</p>
+  <p>Администратор активирован!</p>
   <button onclick="adminMoney()">+1000 МОНЕТ</button>
-  <button onclick="closeAdmin()">ЗАКРЫТЬ</button>
+  <button onclick="backMenu()">ЗАКРЫТЬ</button>
  </div>
 </div>
 
@@ -99,101 +103,130 @@ function resize(){
 resize();
 addEventListener("resize",resize);
 
-let money=Number(localStorage.getItem("m2money"))||0;
+let money=Number(localStorage.getItem("rideMoney"))||0;
 let speed=0;
 let playing=false;
-let gas=false,brake=false,stunt=false;
-let wheelie=0,roadOffset=0,last=performance.now();
-let usedCodes=JSON.parse(localStorage.getItem("m2codes")||"[]");
+let gas=false,brake=false;
+let roadOffset=0,last=performance.now();
+
+let currentModel=localStorage.getItem("rideModel")||"M2+";
+let owned=JSON.parse(localStorage.getItem("rideOwned")||'["M2+"]');
+let usedCodes=JSON.parse(localStorage.getItem("rideCodes")||"[]");
 let isAdmin=false;
 
-function saveMoney(){
- localStorage.setItem("m2money",money);
+function save(){
+ localStorage.setItem("rideMoney",Math.floor(money));
+ localStorage.setItem("rideModel",currentModel);
+ localStorage.setItem("rideOwned",JSON.stringify(owned));
+ localStorage.setItem("rideCodes",JSON.stringify(usedCodes));
 }
 
-function show(id){
- document.getElementById(id).style.display="flex";
+function hideAll(){
+ ["menu","shop","promo","admin"].forEach(id=>{
+  document.getElementById(id).style.display="none";
+ });
 }
-function hide(id){
- document.getElementById(id).style.display="none";
+
+function backMenu(){
+ playing=false;
+ hideAll();
+ document.getElementById("menu").style.display="flex";
+ document.getElementById("controls").style.display="none";
 }
 
 function startGame(){
- hide("menu");
- hide("shop");
- hide("promo");
- hide("admin");
+ hideAll();
  playing=true;
  document.getElementById("controls").style.display="flex";
 }
+
 function openShop(){
  playing=false;
- hide("menu");
- show("shop");
+ hideAll();
+ document.getElementById("shop").style.display="flex";
 }
-function closeShop(){
- hide("shop");
- show("menu");
-}
+
 function openPromo(){
  playing=false;
- hide("menu");
- show("promo");
+ hideAll();
+ document.getElementById("promo").style.display="flex";
  document.getElementById("promoMessage").textContent="";
- document.getElementById("promoInput").value="";
 }
-function closePromo(){
- hide("promo");
- show("menu");
+
+function selectModel(model){
+ if(!owned.includes(model)){
+  alert("Сначала купи этот самокат!");
+  return;
+ }
+ currentModel=model;
+ save();
+ updateHUD();
+ backMenu();
 }
-function closeAdmin(){
- hide("admin");
- show("menu");
+
+function buyM5(){
+ if(owned.includes("M5 PRO")){
+  selectModel("M5 PRO");
+  return;
+ }
+ if(money<2000){
+  alert("Недостаточно денег! Нужно 2000$");
+  return;
+ }
+ money-=2000;
+ owned.push("M5 PRO");
+ currentModel="M5 PRO";
+ save();
+ updateHUD();
+ alert("🎉 KUGOO M5 PRO куплен!");
+ backMenu();
+}
+
+function updateHUD(){
+ document.getElementById("modelName").textContent=currentModel;
+ document.getElementById("money").textContent=Math.floor(money);
 }
 
 function redeemCode(){
  let code=document.getElementById("promoInput").value.trim();
- let message=document.getElementById("promoMessage");
+ let msg=document.getElementById("promoMessage");
 
  if(code==="CMART193"){
   isAdmin=true;
-  message.textContent="👑 АДМИН-ДОСТУП АКТИВИРОВАН!";
-  message.style.color="#42d9ff";
+  msg.textContent="👑 ДОБРО ПОЖАЛОВАТЬ, АДМИН!";
   setTimeout(()=>{
-   hide("promo");
-   show("admin");
-  },700);
+   hideAll();
+   document.getElementById("admin").style.display="flex";
+  },600);
   return;
  }
 
  if(code.toLowerCase()==="quverty"){
   if(usedCodes.includes("Quverty")){
-   message.textContent="❌ Код уже использован!";
-   message.style.color="#ff5555";
+   msg.textContent="❌ Код уже использован!";
    return;
   }
   money+=500;
-  saveMoney();
   usedCodes.push("Quverty");
-  localStorage.setItem("m2codes",JSON.stringify(usedCodes));
-  message.textContent="🎉 +500 МОНЕТ! ПОЗДРАВЛЯЕМ!";
-  message.style.color="#35ee91";
+  save();
+  updateHUD();
+  msg.textContent="🎉 +500 МОНЕТ!";
   return;
  }
 
- message.textContent="❌ НЕВЕРНЫЙ ПРОМОКОД!";
- message.style.color="#ff5555";
+ msg.textContent="❌ НЕВЕРНЫЙ ПРОМОКОД!";
 }
 
 function adminMoney(){
  if(!isAdmin)return;
  money+=1000;
- saveMoney();
+ save();
+ updateHUD();
  alert("Добавлено 1000 монет!");
 }
 
 function hold(id,fn){
- const b=document.getElementById(id);
+ let b=document.getElementById(id);
  b.addEventListener("pointerdown",e=>{
   e.preventDefault();
   b.setPointerCapture(e.pointerId);
@@ -205,10 +238,9 @@ function hold(id,fn){
 }
 hold("gas",v=>gas=v);
 hold("brake",v=>brake=v);
-hold("stunt",v=>stunt=v);
 
 function drawCity(){
- const horizon=H*.48;
+ let horizon=H*.48;
  ctx.fillStyle="#111b30";
  ctx.fillRect(0,0,W,H);
 
@@ -217,9 +249,9 @@ function drawCity(){
  ctx.arc(W*.8,H*.15,H*.045,0,Math.PI*2);
  ctx.fill();
 
- for(let i=0;i<16;i++){
-  let x=i*W/12-(roadOffset*.25%(W/12));
-  let bh=H*(.12+(i*37%100)/400);
+ for(let i=0;i<18;i++){
+  let x=i*W/13-(roadOffset*.25%(W/13));
+  let bh=H*(.13+(i*37%100)/400);
   ctx.fillStyle=i%2?"#25344c":"#1c2940";
   ctx.fillRect(x,horizon-bh,W/14,bh);
 
@@ -250,56 +282,138 @@ function drawCity(){
  ctx.setLineDash([]);
 }
 
-function drawScooter(){
- let x=W*.5,y=H*.77;
- let s=Math.min(W,H)/700;
+function wheel(x,y,r){
+ ctx.fillStyle="#090d13";
+ ctx.beginPath();
+ ctx.arc(x,y,r,0,Math.PI*2);
+ ctx.fill();
+ ctx.strokeStyle="#38dfff";
+ ctx.lineWidth=4;
+ ctx.stroke();
+ ctx.fillStyle="#777";
+ ctx.beginPath();
+ ctx.arc(x,y,r*.28,0,Math.PI*2);
+ ctx.fill();
+}
 
+function drawM2(s){
+ // Компактная модель M2+ с сиденьем
+ wheel(-76,52,23);
+ wheel(76,52,23);
+
+ // Дека
+ ctx.fillStyle="#202b3b";
+ ctx.fillRect(-87,12,165,13);
+ ctx.fillStyle="#36d9ff";
+ ctx.fillRect(-60,13,105,3);
+
+ // Передняя стойка
+ ctx.strokeStyle="#c3cedb";
+ ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(67,20);
+ ctx.lineTo(48,-105);
+ ctx.stroke();
+
+ // Руль
+ ctx.lineWidth=7;
+ ctx.beginPath();
+ ctx.moveTo(17,-105);
+ ctx.lineTo(80,-105);
+ ctx.stroke();
+
+ // Сиденье и его стойка
+ ctx.strokeStyle="#aeb9c8";
+ ctx.lineWidth=7;
+ ctx.beginPath();
+ ctx.moveTo(-43,12);
+ ctx.lineTo(-45,-57);
+ ctx.stroke();
+
+ ctx.fillStyle="#151a24";
+ ctx.fillRect(-77,-69,65,12);
+
+ // Фара
+ ctx.fillStyle="#fff3a0";
+ ctx.beginPath();
+ ctx.arc(79,-105,8,0,Math.PI*2);
+ ctx.fill();
+}
+
+function drawM5(s){
+ // Большая рама M5 Pro
+ wheel(-91,58,35);
+ wheel(94,58,39);
+
+ // Массивная дека
+ ctx.fillStyle="#171c25";
+ ctx.fillRect(-108,9,215,24);
+ ctx.fillStyle="#ff9a32";
+ ctx.fillRect(-80,10,135,5);
+
+ // Задняя часть и подвеска
+ ctx.strokeStyle="#aab7c8";
+ ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(-85,16);
+ ctx.lineTo(-91,45);
+ ctx.moveTo(84,20);
+ ctx.lineTo(94,45);
+ ctx.stroke();
+
+ // Передняя массивная стойка
+ ctx.strokeStyle="#b9c6d6";
+ ctx.lineWidth=15;
+ ctx.beginPath();
+ ctx.moveTo(91,16);
+ ctx.lineTo(59,-117);
+ ctx.stroke();
+
+ // Руль
+ ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(20,-117);
+ ctx.lineTo(100,-117);
+ ctx.stroke();
+
+ // Сиденье
+ ctx.strokeStyle="#9ca9b8";
+ ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(-46,10);
+ ctx.lineTo(-49,-65);
+ ctx.stroke();
+
+ ctx.fillStyle="#111820";
+ ctx.fillRect(-94,-82,95,19);
+
+ // Задний кофр
+ ctx.fillStyle="#252d38";
+ ctx.fillRect(-125,-31,48,39);
+ ctx.strokeStyle="#ff9a32";
+ ctx.lineWidth=3;
+ ctx.strokeRect(-125,-31,48,39);
+
+ // Фара
+ ctx.fillStyle="#fff3a0";
+ ctx.beginPath();
+ ctx.arc(98,-117,10,0,Math.PI*2);
+ ctx.fill();
+}
+
+function drawScooter(){
+ let s=Math.min(W,H)/700;
  ctx.save();
- ctx.translate(x,y);
+ ctx.translate(W*.5,H*.77);
  ctx.scale(s,s);
- ctx.rotate(-wheelie*.35);
 
  ctx.fillStyle="#0008";
  ctx.beginPath();
- ctx.ellipse(0,75,115,13,0,0,Math.PI*2);
+ ctx.ellipse(0,100,currentModel==="M5 PRO"?150:115,13,0,0,Math.PI*2);
  ctx.fill();
 
- ctx.fillStyle="#080b10";
- for(let wx of [-75,75]){
-  ctx.beginPath();
-  ctx.arc(wx,55,25,0,Math.PI*2);
-  ctx.fill();
-  ctx.strokeStyle="#36d9ff";
-  ctx.lineWidth=4;
-  ctx.stroke();
-  ctx.fillStyle="#777";
-  ctx.beginPath();
-  ctx.arc(wx,55,8,0,Math.PI*2);
-  ctx.fill();
- }
-
- ctx.fillStyle="#202b3b";
- ctx.fillRect(-90,17,180,12);
- ctx.fillStyle="#32d9ff";
- ctx.fillRect(-65,18,130,3);
-
- ctx.strokeStyle="#b8c4d5";
- ctx.lineWidth=9;
- ctx.beginPath();
- ctx.moveTo(65,25);
- ctx.lineTo(47,-105);
- ctx.stroke();
-
- ctx.lineWidth=7;
- ctx.beginPath();
- ctx.moveTo(18,-105);
- ctx.lineTo(75,-105);
- ctx.stroke();
-
- ctx.fillStyle="#fff3a0";
- ctx.beginPath();
- ctx.arc(75,-105,7,0,Math.PI*2);
- ctx.fill();
+ if(currentModel==="M5 PRO")drawM5(s);
+ else drawM2(s);
 
  ctx.restore();
 }
@@ -309,13 +423,10 @@ function frame(now){
  last=now;
 
  if(playing){
-  if(gas)speed=Math.min(speed+45*dt,65);
-  else speed=Math.max(0,speed-12*dt);
+  if(gas)speed=Math.min(speed+35*dt,55);
+  else speed=Math.max(0,speed-10*dt);
 
-  if(brake)speed=Math.max(0,speed-90*dt);
-
-  if(stunt&&speed>5)wheelie=Math.min(1,wheelie+2*dt);
-  else wheelie=Math.max(0,wheelie-2*dt);
+  if(brake)speed=Math.max(0,speed-75*dt);
 
   roadOffset+=speed*dt*5;
 
@@ -326,17 +437,12 @@ function frame(now){
 
  drawCity();
  drawScooter();
-
- document.getElementById("money").textContent=Math.floor(money);
- document.getElementById("speed").textContent=Math.floor(speed);
-
- if(Math.floor(money)!==Math.floor(Number(localStorage.getItem("m2money"))||0)){
-  saveMoney();
- }
+ updateHUD();
 
  requestAnimationFrame(frame);
 }
 
+updateHUD();
 requestAnimationFrame(frame);
 </script>
 </body>
