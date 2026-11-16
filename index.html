@@ -1,88 +1,151 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>M2+ NIGHT RIDE</title>
+<title>KUGOO 3D NIGHT RIDE</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101522;color:white;font-family:Arial;overflow:hidden;touch-action:none}
-canvas{width:100vw;height:100vh;display:block}
-#hud{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
-.panel{background:#101cdd;padding:11px;border-radius:12px;font-weight:bold}
-#controls{position:absolute;bottom:18px;left:0;right:0;display:none;justify-content:space-between;padding:0 15px}
-button{background:#26364c;color:white;border:1px solid #ffffff55;border-radius:13px;padding:15px;font-weight:bold;margin:5px}
-button:active{filter:brightness(1.5)}
-.gas{background:#087b49}
-.brake{background:#a52b36}
-#menu,#shop,#promo,#admin{
-position:absolute;inset:0;background:#080d18ed;
-display:flex;align-items:center;justify-content:center;z-index:5
+body{
+ margin:0;overflow:hidden;background:#101522;
+ color:white;font-family:Arial;touch-action:none
 }
-#shop,#promo,#admin{display:none}
-.box{background:#182438;border:1px solid #ffffff44;padding:22px;border-radius:20px;width:88%;max-width:390px;text-align:center;max-height:90vh;overflow:auto}
+canvas{display:block}
+#hud{
+ position:absolute;top:12px;left:12px;right:12px;
+ display:flex;justify-content:space-between;pointer-events:none
+}
+.panel{
+ background:#101cddcc;padding:10px 13px;
+ border:1px solid #ffffff44;border-radius:12px;
+ font-weight:bold
+}
+#controls{
+ position:absolute;bottom:15px;left:0;right:0;
+ display:none;justify-content:space-between;
+ align-items:end;padding:0 15px
+}
+button{
+ color:white;background:#26364c;
+ border:1px solid #ffffff55;border-radius:13px;
+ padding:14px;font-size:15px;font-weight:bold;
+ margin:4px;touch-action:none
+}
+button:active{filter:brightness(1.5)}
+.gas{background:#087b49;min-width:85px}
+.brake{background:#a52b36}
+.menu{
+ position:absolute;inset:0;background:#080d18eF;
+ display:flex;align-items:center;justify-content:center;
+ z-index:5
+}
+.box{
+ background:#182438;border:1px solid #ffffff44;
+ padding:20px;border-radius:20px;
+ width:90%;max-width:390px;text-align:center;
+ max-height:85vh;overflow:auto
+}
 h1{color:#42d9ff}
-.box button{width:100%;display:block}
-input{width:90%;padding:13px;background:#101522;color:white;border:1px solid #42d9ff;border-radius:10px;text-align:center;font-size:17px}
-.card{background:#26364c;border-radius:12px;padding:10px;margin:10px 0}
+.box button{width:100%}
+.hidden{display:none!important}
+.card{
+ background:#26364c;padding:12px;
+ margin:10px 0;border-radius:13px
+}
+input{
+ width:95%;padding:13px;background:#101522;
+ border:1px solid #42d9ff;border-radius:10px;
+ color:white;font-size:17px;text-align:center
+}
+#topButtons{
+ position:absolute;top:85px;right:10px;
+ display:none;flex-direction:column;align-items:end
+}
+#topButtons button{background:#182b43}
 </style>
 </head>
+
 <body>
 
-<canvas id="game"></canvas>
-
 <div id="hud">
- <div class="panel">🛴 <span id="modelName">M2+</span><br>💰 <span id="money">0</span>$</div>
- <div class="panel">⚡ <span id="speed">0</span> км/ч</div>
+ <div class="panel">
+ 🛴 <span id="modelName">M2+</span><br>
+ 💰 <span id="money">0</span> $
+ </div>
+ <div class="panel">
+ ⚡ <span id="speed">0</span> км/ч
+ </div>
+</div>
+
+<div id="topButtons">
+ <button onclick="openInventory()">🎒 ИНВЕНТАРЬ</button>
+ <button onclick="openShop()">🛒 МАГАЗИН</button>
+ <button onclick="openPromo()">🎁 ПРОМОКОД</button>
 </div>
 
 <div id="controls">
- <div>
-  <button class="brake" id="brake">ТОРМОЗ</button>
- </div>
+ <button class="brake" id="brake">ТОРМОЗ</button>
  <button class="gas" id="gas">ГАЗ</button>
 </div>
 
-<div id="menu">
+<div id="menu" class="menu">
  <div class="box">
-  <h1>NIGHT RIDE</h1>
-  <h2>🛴 ГОРОДСКИЕ ПОЕЗДКИ</h2>
+  <h1>KUGOO 3D NIGHT RIDE</h1>
+  <h2>Добро пожаловать!</h2>
+  <p>Настоящий объёмный мир самокатов</p>
   <button onclick="startGame()">▶ ИГРАТЬ</button>
+  <button onclick="openInventory()">🎒 ИНВЕНТАРЬ</button>
   <button onclick="openShop()">🛒 МАГАЗИН</button>
-  <button onclick="openPromo()">🎁 ПРОМОКОД</button>
+  <button onclick="openPromo()">🎁 ПРОМОКОДЫ</button>
  </div>
 </div>
 
-<div id="shop">
+<div id="inventory" class="menu hidden">
+ <div class="box">
+  <h1>🎒 ИНВЕНТАРЬ</h1>
+  <div id="inventoryItems"></div>
+  <button onclick="backMenu()">НАЗАД</button>
+ </div>
+</div>
+
+<div id="shop" class="menu hidden">
  <div class="box">
   <h1>🛒 МАГАЗИН</h1>
   <div class="card">
    <h2>KUGOO M2+</h2>
-   <p>Компактный городской самокат с сиденьем</p>
-   <p>Цена: БЕСПЛАТНО</p>
+   <p>Компактный городской самокат</p>
+   <p>Бесплатно</p>
    <button onclick="selectModel('M2+')">ВЫБРАТЬ</button>
   </div>
   <div class="card">
+   <h2>KUGOO F3+</h2>
+   <p>10-дюймовые колёса, маятниковая подвеска</p>
+   <p>1500$</p>
+   <button onclick="buyModel('F3+',1500)">КУПИТЬ</button>
+  </div>
+  <div class="card">
    <h2>KUGOO M5 PRO</h2>
-   <p>Большой мощный самокат с массивной рамой</p>
-   <p>Цена: 2000$</p>
-   <button onclick="buyM5()">КУПИТЬ / ВЫБРАТЬ</button>
+   <p>Массивная рама, большие колёса</p>
+   <p>2000$</p>
+   <button onclick="buyModel('M5 PRO',2000)">КУПИТЬ</button>
   </div>
   <button onclick="backMenu()">НАЗАД</button>
  </div>
 </div>
 
-<div id="promo">
+<div id="promo" class="menu hidden">
  <div class="box">
   <h1>🎁 ПРОМОКОДЫ</h1>
-  <input id="promoInput" placeholder="Введи промокод">
+  <input id="promoInput" placeholder="ВВЕДИ КОД">
   <button onclick="redeemCode()">АКТИВИРОВАТЬ</button>
   <p id="promoMessage"></p>
   <button onclick="backMenu()">НАЗАД</button>
  </div>
 </div>
 
-<div id="admin">
+<div id="admin" class="menu hidden">
  <div class="box">
   <h1>👑 ADMIN PANEL</h1>
   <p>Администратор активирован!</p>
@@ -91,101 +154,143 @@ input{width:90%;padding:13px;background:#101522;color:white;border:1px solid #42
  </div>
 </div>
 
-<script>
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-
-let W,H;
-function resize(){
- W=canvas.width=innerWidth*devicePixelRatio;
- H=canvas.height=innerHeight*devicePixelRatio;
+<script type="importmap">
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+ }
 }
-resize();
-addEventListener("resize",resize);
+</script>
 
-let money=Number(localStorage.getItem("rideMoney"))||0;
+<script type="module">
+import * as THREE from "three";
+
+// ===============================
+// СОХРАНЕНИЯ
+// ===============================
+
+let money=Number(localStorage.getItem("k3money"))||0;
+let owned=JSON.parse(localStorage.getItem("k3owned")||'["M2+"]');
+let usedCodes=JSON.parse(localStorage.getItem("k3codes")||"[]");
+let currentModel=localStorage.getItem("k3model")||"M2+";
+
 let speed=0;
-let playing=false;
 let gas=false,brake=false;
-let roadOffset=0,last=performance.now();
-
-let currentModel=localStorage.getItem("rideModel")||"M2+";
-let owned=JSON.parse(localStorage.getItem("rideOwned")||'["M2+"]');
-let usedCodes=JSON.parse(localStorage.getItem("rideCodes")||"[]");
+let playing=false;
 let isAdmin=false;
+let distance=0;
 
 function save(){
- localStorage.setItem("rideMoney",Math.floor(money));
- localStorage.setItem("rideModel",currentModel);
- localStorage.setItem("rideOwned",JSON.stringify(owned));
- localStorage.setItem("rideCodes",JSON.stringify(usedCodes));
+ localStorage.setItem("k3money",Math.floor(money));
+ localStorage.setItem("k3owned",JSON.stringify(owned));
+ localStorage.setItem("k3model",currentModel);
+ localStorage.setItem("k3codes",JSON.stringify(usedCodes));
+ updateHUD();
 }
 
-function hideAll(){
- ["menu","shop","promo","admin"].forEach(id=>{
-  document.getElementById(id).style.display="none";
- });
+function updateHUD(){
+ document.getElementById("money").textContent=Math.floor(money);
+ document.getElementById("speed").textContent=Math.floor(speed);
+ document.getElementById("modelName").textContent=currentModel;
+}
+
+// ===============================
+// МЕНЮ
+// ===============================
+
+const ids=["menu","inventory","shop","promo","admin"];
+
+function hideMenus(){
+ ids.forEach(id=>document.getElementById(id).classList.add("hidden"));
 }
 
 function backMenu(){
  playing=false;
- hideAll();
- document.getElementById("menu").style.display="flex";
+ hideMenus();
+ document.getElementById("menu").classList.remove("hidden");
  document.getElementById("controls").style.display="none";
+ document.getElementById("topButtons").style.display="none";
 }
 
 function startGame(){
- hideAll();
+ hideMenus();
  playing=true;
  document.getElementById("controls").style.display="flex";
+ document.getElementById("topButtons").style.display="flex";
 }
 
 function openShop(){
  playing=false;
- hideAll();
- document.getElementById("shop").style.display="flex";
+ hideMenus();
+ document.getElementById("shop").classList.remove("hidden");
+}
+
+function openInventory(){
+ playing=false;
+ hideMenus();
+ renderInventory();
+ document.getElementById("inventory").classList.remove("hidden");
 }
 
 function openPromo(){
  playing=false;
- hideAll();
- document.getElementById("promo").style.display="flex";
- document.getElementById("promoMessage").textContent="";
+ hideMenus();
+ document.getElementById("promo").classList.remove("hidden");
 }
 
-function selectModel(model){
- if(!owned.includes(model)){
-  alert("Сначала купи этот самокат!");
+function selectModel(name){
+ if(!owned.includes(name)){
+  alert("Сначала купи самокат!");
   return;
  }
- currentModel=model;
+ currentModel=name;
+ buildScooter();
  save();
- updateHUD();
  backMenu();
 }
 
-function buyM5(){
- if(owned.includes("M5 PRO")){
-  selectModel("M5 PRO");
+function buyModel(name,cost){
+ if(owned.includes(name)){
+  selectModel(name);
   return;
  }
- if(money<2000){
-  alert("Недостаточно денег! Нужно 2000$");
+ if(money<cost){
+  alert("Не хватает монет!");
   return;
  }
- money-=2000;
- owned.push("M5 PRO");
- currentModel="M5 PRO";
+ money-=cost;
+ owned.push(name);
+ currentModel=name;
+ buildScooter();
  save();
- updateHUD();
- alert("🎉 KUGOO M5 PRO куплен!");
+ alert(name+" куплен!");
  backMenu();
 }
 
-function updateHUD(){
- document.getElementById("modelName").textContent=currentModel;
- document.getElementById("money").textContent=Math.floor(money);
+function renderInventory(){
+ let container=document.getElementById("inventoryItems");
+ container.innerHTML="";
+
+ ["M2+","F3+","M5 PRO"].forEach(name=>{
+  let card=document.createElement("div");
+  card.className="card";
+  card.innerHTML=`
+   <h2>KUGOO ${name}</h2>
+   <p>${owned.includes(name)?"✅ ЕСТЬ В ГАРАЖЕ":"🔒 НЕ КУПЛЕН"}</p>
+  `;
+  if(owned.includes(name)){
+   let button=document.createElement("button");
+   button.textContent=name===currentModel?"ВЫБРАН":"ВЫБРАТЬ";
+   button.onclick=()=>selectModel(name);
+   card.appendChild(button);
+  }
+  container.appendChild(card);
+ });
 }
+
+// ===============================
+// ПРОМОКОДЫ
+// ===============================
 
 function redeemCode(){
  let code=document.getElementById("promoInput").value.trim();
@@ -193,257 +298,362 @@ function redeemCode(){
 
  if(code==="CMART193"){
   isAdmin=true;
-  msg.textContent="👑 ДОБРО ПОЖАЛОВАТЬ, АДМИН!";
+  msg.textContent="👑 АДМИН АКТИВИРОВАН!";
   setTimeout(()=>{
-   hideAll();
-   document.getElementById("admin").style.display="flex";
-  },600);
+   hideMenus();
+   document.getElementById("admin").classList.remove("hidden");
+  },500);
   return;
  }
 
  if(code.toLowerCase()==="quverty"){
   if(usedCodes.includes("Quverty")){
-   msg.textContent="❌ Код уже использован!";
+   msg.textContent="КОД УЖЕ ИСПОЛЬЗОВАН!";
    return;
   }
   money+=500;
   usedCodes.push("Quverty");
   save();
-  updateHUD();
   msg.textContent="🎉 +500 МОНЕТ!";
   return;
  }
 
- msg.textContent="❌ НЕВЕРНЫЙ ПРОМОКОД!";
+ msg.textContent="❌ НЕВЕРНЫЙ КОД!";
 }
 
 function adminMoney(){
  if(!isAdmin)return;
  money+=1000;
  save();
- updateHUD();
- alert("Добавлено 1000 монет!");
+ alert("+1000 монет!");
 }
 
-function hold(id,fn){
- let b=document.getElementById(id);
+// ===============================
+// THREE.JS 3D
+// ===============================
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x10182c);
+scene.fog=new THREE.Fog(0x10182c,18,65);
+
+const camera=new THREE.PerspectiveCamera(
+ 55,innerWidth/innerHeight,0.1,150
+);
+camera.position.set(3.7,3.1,6.5);
+camera.lookAt(0,0.9,0);
+
+const renderer=new THREE.WebGLRenderer({
+ antialias:true,
+ powerPreference:"high-performance"
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// Свет
+scene.add(new THREE.HemisphereLight(0x9ebfff,0x26303b,2));
+
+const light=new THREE.DirectionalLight(0xffffff,3);
+light.position.set(4,9,5);
+light.castShadow=true;
+scene.add(light);
+
+// Материалы
+const mat=(color,metalness=0,roughness=.6)=>
+ new THREE.MeshStandardMaterial({color,metalness,roughness});
+
+const black=mat(0x10141b,.3);
+const rubber=mat(0x080b10);
+const metal=mat(0xaab6c5,.8);
+const blue=mat(0x168dca,.35);
+const orange=mat(0xff8b24,.3);
+const white=mat(0xffffff);
+const dark=mat(0x202b3b);
+
+// Пол
+const ground=new THREE.Mesh(
+ new THREE.PlaneGeometry(150,30),
+ mat(0x30343e)
+);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.04;
+ground.receiveShadow=true;
+scene.add(ground);
+
+// Разметка
+const roadMarks=[];
+for(let i=0;i<24;i++){
+ const mark=new THREE.Mesh(
+  new THREE.BoxGeometry(2,.015,.12),
+  mat(0xf4d77c)
+ );
+ mark.position.set(i*5-50,.01,0);
+ scene.add(mark);
+ roadMarks.push(mark);
+}
+
+// Город
+for(let i=0;i<35;i++){
+ const h=2+Math.random()*7;
+ const building=new THREE.Mesh(
+  new THREE.BoxGeometry(2.2,h,2.5),
+  mat(i%2?0x25344b:0x1a263b)
+ );
+ building.position.set(
+  -45+i*3,
+  h/2,
+  i%2?-8:8
+ );
+ building.castShadow=true;
+ scene.add(building);
+
+ for(let y=.8;y<h-0.5;y+=1.2){
+  const windowMesh=new THREE.Mesh(
+   new THREE.BoxGeometry(.22,.3,.025),
+   mat(0xffcf66)
+  );
+  windowMesh.position.set(
+   building.position.x,
+   y,
+   building.position.z+(i%2?-1.26:1.26)
+  );
+  scene.add(windowMesh);
+ }
+}
+
+// ===============================
+// СОЗДАНИЕ 3D САМОКАТА
+// ===============================
+
+let scooter=new THREE.Group();
+scene.add(scooter);
+
+let wheels=[];
+let scooterParts=[];
+
+function box(parent,x,y,z,sx,sy,sz,material){
+ const mesh=new THREE.Mesh(
+  new THREE.BoxGeometry(sx,sy,sz),material
+ );
+ mesh.position.set(x,y,z);
+ mesh.castShadow=true;
+ parent.add(mesh);
+ return mesh;
+}
+
+function rod(parent,a,b,r,material){
+ const start=new THREE.Vector3(...a);
+ const end=new THREE.Vector3(...b);
+ const direction=new THREE.Vector3().subVectors(end,start);
+ const mesh=new THREE.Mesh(
+  new THREE.CylinderGeometry(r,r,direction.length(),12),
+  material
+ );
+ mesh.position.copy(start).add(end).multiplyScalar(.5);
+ mesh.quaternion.setFromUnitVectors(
+  new THREE.Vector3(0,1,0),direction.normalize()
+ );
+ mesh.castShadow=true;
+ parent.add(mesh);
+ return mesh;
+}
+
+function wheel(parent,x,z,r){
+ const group=new THREE.Group();
+ group.position.set(x,r,z);
+
+ const tire=new THREE.Mesh(
+  new THREE.CylinderGeometry(r,r,r*.55,32),
+  rubber
+ );
+ tire.rotation.z=Math.PI/2;
+ tire.castShadow=true;
+ group.add(tire);
+
+ const hub=new THREE.Mesh(
+  new THREE.CylinderGeometry(r*.35,r*.35,r*.62,24),
+  metal
+ );
+ hub.rotation.z=Math.PI/2;
+ group.add(hub);
+
+ const ring=new THREE.Mesh(
+  new THREE.TorusGeometry(r*.72,.025,8,32),
+  blue
+ );
+ ring.rotation.y=Math.PI/2;
+ group.add(ring);
+
+ parent.add(group);
+ wheels.push(group);
+ return group;
+}
+
+function buildScooter(){
+ scene.remove(scooter);
+ scooter=new THREE.Group();
+ scene.add(scooter);
+ wheels=[];
+
+ const type=currentModel;
+
+ let isM2=type==="M2+";
+ let isF3=type==="F3+";
+ let isM5=type==="M5 PRO";
+
+ let radius=isM2?.30:isF3?.39:.43;
+ let length=isM2?1.65:isF3?1.95:2.05;
+ let color=isF3?blue:isM5?orange:dark;
+
+ // Колёса
+ wheel(scooter,-length*.42,0,radius);
+ wheel(scooter,length*.42,0,radius);
+
+ // Дека
+ box(scooter,0,radius+.18,0,length,.18,.38,isM5?black:color);
+ box(scooter,0,radius+.28,0,length*.7,.025,.32,black);
+
+ // Рама
+ rod(scooter,[-length*.38,radius+.2,0],
+  [length*.38,radius+.2,0],.045,metal);
+
+ // Передняя стойка
+ rod(scooter,[length*.40,radius+.2,0],
+  [length*.31,1.85,0],isM5?.085:.055,metal);
+
+ // Руль
+ rod(scooter,[length*.31,1.85,-.35],
+  [length*.31,1.85,.35],.045,black);
+
+ // Ручки
+ box(scooter,length*.31,1.85,-.42,.16,.08,.15,black);
+ box(scooter,length*.31,1.85,.42,.16,.08,.15,black);
+
+ // Фара
+ const head=new THREE.Mesh(
+  new THREE.SphereGeometry(.10,16,16),white
+ );
+ head.position.set(length*.31,1.65,.05);
+ scooter.add(head);
+
+ // Крылья
+ const fender= new THREE.Mesh(
+  new THREE.TorusGeometry(radius*1.03,.045,8,24,Math.PI),
+  black
+ );
+ fender.position.set(length*.42,radius,0);
+ fender.rotation.z=Math.PI;
+ scooter.add(fender);
+
+ const rearFender=fender.clone();
+ rearFender.position.x=-length*.42;
+ scooter.add(rearFender);
+
+ // Сиденье
+ if(isM2||isM5){
+  rod(scooter,[-.30,radius+.25,0],
+   [-.30,1.12,0],.055,metal);
+  box(scooter,-.30,1.18,0,.65,.14,.35,black);
+ }
+
+ // Особенности F3+
+ if(isF3){
+  // Маятниковая подвеска
+  rod(scooter,[-length*.42,radius+.15,0],
+   [-length*.18,radius+.45,0],.055,orange);
+  rod(scooter,[length*.42,radius+.15,0],
+   [length*.15,radius+.45,0],.055,orange);
+
+  // Дополнительная массивная дека
+  box(scooter,0,radius+.12,0,length*1.08,.12,.48,blue);
+ }
+
+ // Особенности M5 PRO
+ if(isM5){
+  box(scooter,-length*.38,1.0,0,.55,.48,.48,black);
+  rod(scooter,[-.5,radius+.2,0],
+   [-.5,.85,0],.08,orange);
+  box(scooter,0,radius+.35,0,length*.85,.08,.48,orange);
+ }
+
+ // Подножка
+ rod(scooter,[-.35,.12,0],
+  [-.20,radius+.1,0],.025,metal);
+
+ scooter.position.set(0,0,0);
+ scooter.rotation.y=-.12;
+}
+
+// ===============================
+// УПРАВЛЕНИЕ
+// ===============================
+
+function hold(id,callback){
+ const b=document.getElementById(id);
  b.addEventListener("pointerdown",e=>{
   e.preventDefault();
   b.setPointerCapture(e.pointerId);
-  fn(true);
+  callback(true);
  });
- ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>{
-  b.addEventListener(ev,()=>fn(false));
+ ["pointerup","pointercancel","lostpointercapture"].forEach(event=>{
+  b.addEventListener(event,()=>callback(false));
  });
 }
+
 hold("gas",v=>gas=v);
 hold("brake",v=>brake=v);
 
-function drawCity(){
- let horizon=H*.48;
- ctx.fillStyle="#111b30";
- ctx.fillRect(0,0,W,H);
+// ===============================
+// ИГРОВОЙ ЦИКЛ
+// ===============================
 
- ctx.fillStyle="#d9edff";
- ctx.beginPath();
- ctx.arc(W*.8,H*.15,H*.045,0,Math.PI*2);
- ctx.fill();
+let previous=performance.now();
 
- for(let i=0;i<18;i++){
-  let x=i*W/13-(roadOffset*.25%(W/13));
-  let bh=H*(.13+(i*37%100)/400);
-  ctx.fillStyle=i%2?"#25344c":"#1c2940";
-  ctx.fillRect(x,horizon-bh,W/14,bh);
+function animate(now){
+ requestAnimationFrame(animate);
 
-  for(let y=horizon-bh+12;y<horizon-8;y+=20){
-   ctx.fillStyle="#f5c65b";
-   ctx.fillRect(x+8,y,7,9);
-   ctx.fillRect(x+23,y,7,9);
-  }
- }
-
- ctx.fillStyle="#30343d";
- ctx.beginPath();
- ctx.moveTo(W*.35,horizon);
- ctx.lineTo(W*.65,horizon);
- ctx.lineTo(W*1.2,H);
- ctx.lineTo(-W*.2,H);
- ctx.closePath();
- ctx.fill();
-
- ctx.strokeStyle="#f5d86c";
- ctx.lineWidth=5;
- ctx.setLineDash([35,35]);
- ctx.lineDashOffset=-roadOffset;
- ctx.beginPath();
- ctx.moveTo(W*.5,horizon);
- ctx.lineTo(W*.5,H);
- ctx.stroke();
- ctx.setLineDash([]);
-}
-
-function wheel(x,y,r){
- ctx.fillStyle="#090d13";
- ctx.beginPath();
- ctx.arc(x,y,r,0,Math.PI*2);
- ctx.fill();
- ctx.strokeStyle="#38dfff";
- ctx.lineWidth=4;
- ctx.stroke();
- ctx.fillStyle="#777";
- ctx.beginPath();
- ctx.arc(x,y,r*.28,0,Math.PI*2);
- ctx.fill();
-}
-
-function drawM2(s){
- // Компактная модель M2+ с сиденьем
- wheel(-76,52,23);
- wheel(76,52,23);
-
- // Дека
- ctx.fillStyle="#202b3b";
- ctx.fillRect(-87,12,165,13);
- ctx.fillStyle="#36d9ff";
- ctx.fillRect(-60,13,105,3);
-
- // Передняя стойка
- ctx.strokeStyle="#c3cedb";
- ctx.lineWidth=9;
- ctx.beginPath();
- ctx.moveTo(67,20);
- ctx.lineTo(48,-105);
- ctx.stroke();
-
- // Руль
- ctx.lineWidth=7;
- ctx.beginPath();
- ctx.moveTo(17,-105);
- ctx.lineTo(80,-105);
- ctx.stroke();
-
- // Сиденье и его стойка
- ctx.strokeStyle="#aeb9c8";
- ctx.lineWidth=7;
- ctx.beginPath();
- ctx.moveTo(-43,12);
- ctx.lineTo(-45,-57);
- ctx.stroke();
-
- ctx.fillStyle="#151a24";
- ctx.fillRect(-77,-69,65,12);
-
- // Фара
- ctx.fillStyle="#fff3a0";
- ctx.beginPath();
- ctx.arc(79,-105,8,0,Math.PI*2);
- ctx.fill();
-}
-
-function drawM5(s){
- // Большая рама M5 Pro
- wheel(-91,58,35);
- wheel(94,58,39);
-
- // Массивная дека
- ctx.fillStyle="#171c25";
- ctx.fillRect(-108,9,215,24);
- ctx.fillStyle="#ff9a32";
- ctx.fillRect(-80,10,135,5);
-
- // Задняя часть и подвеска
- ctx.strokeStyle="#aab7c8";
- ctx.lineWidth=9;
- ctx.beginPath();
- ctx.moveTo(-85,16);
- ctx.lineTo(-91,45);
- ctx.moveTo(84,20);
- ctx.lineTo(94,45);
- ctx.stroke();
-
- // Передняя массивная стойка
- ctx.strokeStyle="#b9c6d6";
- ctx.lineWidth=15;
- ctx.beginPath();
- ctx.moveTo(91,16);
- ctx.lineTo(59,-117);
- ctx.stroke();
-
- // Руль
- ctx.lineWidth=9;
- ctx.beginPath();
- ctx.moveTo(20,-117);
- ctx.lineTo(100,-117);
- ctx.stroke();
-
- // Сиденье
- ctx.strokeStyle="#9ca9b8";
- ctx.lineWidth=9;
- ctx.beginPath();
- ctx.moveTo(-46,10);
- ctx.lineTo(-49,-65);
- ctx.stroke();
-
- ctx.fillStyle="#111820";
- ctx.fillRect(-94,-82,95,19);
-
- // Задний кофр
- ctx.fillStyle="#252d38";
- ctx.fillRect(-125,-31,48,39);
- ctx.strokeStyle="#ff9a32";
- ctx.lineWidth=3;
- ctx.strokeRect(-125,-31,48,39);
-
- // Фара
- ctx.fillStyle="#fff3a0";
- ctx.beginPath();
- ctx.arc(98,-117,10,0,Math.PI*2);
- ctx.fill();
-}
-
-function drawScooter(){
- let s=Math.min(W,H)/700;
- ctx.save();
- ctx.translate(W*.5,H*.77);
- ctx.scale(s,s);
-
- ctx.fillStyle="#0008";
- ctx.beginPath();
- ctx.ellipse(0,100,currentModel==="M5 PRO"?150:115,13,0,0,Math.PI*2);
- ctx.fill();
-
- if(currentModel==="M5 PRO")drawM5(s);
- else drawM2(s);
-
- ctx.restore();
-}
-
-function frame(now){
- let dt=Math.min((now-last)/1000,.05);
- last=now;
+ const dt=Math.min((now-previous)/1000,.05);
+ previous=now;
 
  if(playing){
-  if(gas)speed=Math.min(speed+35*dt,55);
-  else speed=Math.max(0,speed-10*dt);
+  if(gas)speed=Math.min(speed+12*dt,45);
+  else speed=Math.max(0,speed-3*dt);
 
-  if(brake)speed=Math.max(0,speed-75*dt);
+  if(brake)speed=Math.max(0,speed-20*dt);
 
-  roadOffset+=speed*dt*5;
+  distance+=speed*dt/3.6;
+  money+=speed>1?5*dt:0;
 
-  if(speed>2){
-   money+=5*dt;
-  }
+  roadMarks.forEach(mark=>{
+   mark.position.x-=speed*dt*.45;
+   if(mark.position.x<-55)mark.position.x+=120;
+  });
+
+  wheels.forEach(w=>{
+   w.rotation.x-=speed*dt*1.3;
+  });
+
+  // Небольшое движение камеры
+  camera.position.x=3.7+Math.sin(now*.0003)*.15;
  }
 
- drawCity();
- drawScooter();
+ renderer.render(scene,camera);
  updateHUD();
-
- requestAnimationFrame(frame);
 }
 
-updateHUD();
-requestAnimationFrame(frame);
+window.addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+
+buildScooter();
+save();
+requestAnimationFrame(animate);
+
 </script>
 </body>
 </html>
