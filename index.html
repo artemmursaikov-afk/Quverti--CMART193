@@ -1,38 +1,45 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>F3+ NIGHT RIDE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>M2+ NIGHT RIDE</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101522;color:white;font-family:Arial;overflow:hidden;touch-action:none}
-canvas{display:block;width:100vw;height:100vh;background:#151c2a}
+canvas{display:block;width:100vw;height:100vh}
 #hud{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
 .panel{background:#111d;border:1px solid #ffffff33;padding:10px 14px;border-radius:12px;font-weight:bold}
 #controls{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:space-between;padding:0 20px;align-items:end}
-.group{display:flex;gap:12px;align-items:end}
-button{border:1px solid #ffffff55;background:#202e40;color:white;border-radius:16px;padding:18px;font-weight:bold;font-size:16px;min-width:65px;touch-action:none}
-button:active{background:#00aaff}
+.group{display:flex;gap:10px}
+button{border:1px solid #ffffff55;background:#202e40;color:white;border-radius:14px;padding:15px;font-weight:bold;font-size:15px;min-width:65px;touch-action:none}
+button:active{filter:brightness(1.5)}
 .gas{background:#087b49}
 .brake{background:#a52b36}
 .stunt{background:#7139a7}
-#menu{position:absolute;inset:0;background:#080d18ed;display:flex;align-items:center;justify-content:center;z-index:5}
-.box{background:#182438;border:1px solid #ffffff33;padding:25px;border-radius:22px;width:85%;max-width:380px;text-align:center}
-.box h1{color:#42d9ff}
-.box button{width:100%;margin:7px 0}
-#shop{display:none;position:absolute;inset:0;background:#080d18f5;z-index:6;padding:25px;text-align:center}
+#menu,#shop,#promo,#admin{
+position:absolute;inset:0;background:#080d18ed;
+display:flex;align-items:center;justify-content:center;z-index:5;
+}
+#shop,#promo,#admin{display:none}
+.box{background:#182438;border:1px solid #ffffff33;padding:24px;border-radius:22px;width:88%;max-width:380px;text-align:center}
+h1{color:#42d9ff}
+.box button{width:100%;margin:6px 0}
+input{width:100%;padding:15px;border-radius:12px;border:1px solid #42d9ff;background:#101522;color:white;font-size:17px;text-align:center;margin:12px 0}
+.small{font-size:12px;color:#aaa}
 </style>
 </head>
 <body>
+
 <canvas id="game"></canvas>
 
 <div id="hud">
- <div class="panel">🛴 F3+ NIGHT RIDE<br>💵 <span id="money">0</span>$</div>
+ <div class="panel">🛴 M2+ NIGHT RIDE<br>💰 <span id="money">0</span></div>
  <div class="panel">⚡ <span id="speed">0</span> км/ч</div>
 </div>
 
-<div id="controls">
+<div id="controls" style="display:none">
  <div class="group">
   <button class="brake" id="brake">ТОРМОЗ</button>
   <button class="stunt" id="stunt">СТАНТ</button>
@@ -42,195 +49,295 @@ button:active{background:#00aaff}
 
 <div id="menu">
  <div class="box">
-  <h1>F3+ NIGHT RIDE</h1>
-  <p>Город ждёт тебя!</p>
+  <h1>M2+ NIGHT RIDE</h1>
+  <p>Добро пожаловать в город!</p>
   <button onclick="startGame()">▶ ИГРАТЬ</button>
   <button onclick="openShop()">🛒 МАГАЗИН</button>
-  <p>Зарабатывай 5$ за секунду езды!</p>
+  <button onclick="openPromo()">🎁 ПРОМОКОДЫ</button>
+  <p class="small">Зарабатывай 5 монет за секунду езды!</p>
  </div>
 </div>
 
 <div id="shop">
- <h1>🛒 МАГАЗИН</h1>
  <div class="box">
-  <h2>🛴 F3+</h2>
-  <p>Твой первый самокат</p>
-  <p>Цена: 0$</p>
-  <button onclick="closeShop()">ВЫБРАТЬ</button>
-  <h2>🛴 KUGOO M5 PRO</h2>
-  <p>Цена: 2000$</p>
-  <button onclick="buyM5()">КУПИТЬ</button>
+  <h1>🛒 МАГАЗИН</h1>
+  <h2>🛴 M2+</h2>
+  <p>Твой основной самокат</p>
   <button onclick="closeShop()">НАЗАД</button>
+ </div>
+</div>
+
+<div id="promo">
+ <div class="box">
+  <h1>🎁 ПРОМОКОДЫ</h1>
+  <p>Введи свой код:</p>
+  <input id="promoInput" placeholder="ВВЕДИ ПРОМОКОД">
+  <button onclick="redeemCode()">АКТИВИРОВАТЬ</button>
+  <p id="promoMessage"></p>
+  <button onclick="closePromo()">НАЗАД</button>
+ </div>
+</div>
+
+<div id="admin">
+ <div class="box">
+  <h1>👑 ADMIN PANEL</h1>
+  <p>Добро пожаловать, администратор!</p>
+  <button onclick="adminMoney()">+1000 МОНЕТ</button>
+  <button onclick="closeAdmin()">ЗАКРЫТЬ</button>
  </div>
 </div>
 
 <script>
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
+
 let W,H;
 function resize(){
  W=canvas.width=innerWidth*devicePixelRatio;
  H=canvas.height=innerHeight*devicePixelRatio;
 }
-resize();addEventListener("resize",resize);
+resize();
+addEventListener("resize",resize);
 
-let money=0,speed=0,playing=false,gas=false,brake=false,stunt=false;
-let wheelie=0,distance=0,roadOffset=0,last=performance.now();
-let scooter="F3+";
+let money=Number(localStorage.getItem("m2money"))||0;
+let speed=0;
+let playing=false;
+let gas=false,brake=false,stunt=false;
+let wheelie=0,roadOffset=0,last=performance.now();
+let usedCodes=JSON.parse(localStorage.getItem("m2codes")||"[]");
+let isAdmin=false;
+
+function saveMoney(){
+ localStorage.setItem("m2money",money);
+}
+
+function show(id){
+ document.getElementById(id).style.display="flex";
+}
+function hide(id){
+ document.getElementById(id).style.display="none";
+}
+
+function startGame(){
+ hide("menu");
+ hide("shop");
+ hide("promo");
+ hide("admin");
+ playing=true;
+ document.getElementById("controls").style.display="flex";
+}
+function openShop(){
+ playing=false;
+ hide("menu");
+ show("shop");
+}
+function closeShop(){
+ hide("shop");
+ show("menu");
+}
+function openPromo(){
+ playing=false;
+ hide("menu");
+ show("promo");
+ document.getElementById("promoMessage").textContent="";
+ document.getElementById("promoInput").value="";
+}
+function closePromo(){
+ hide("promo");
+ show("menu");
+}
+function closeAdmin(){
+ hide("admin");
+ show("menu");
+}
+
+function redeemCode(){
+ let code=document.getElementById("promoInput").value.trim();
+ let message=document.getElementById("promoMessage");
+
+ if(code==="CMART193"){
+  isAdmin=true;
+  message.textContent="👑 АДМИН-ДОСТУП АКТИВИРОВАН!";
+  message.style.color="#42d9ff";
+  setTimeout(()=>{
+   hide("promo");
+   show("admin");
+  },700);
+  return;
+ }
+
+ if(code.toLowerCase()==="quverty"){
+  if(usedCodes.includes("Quverty")){
+   message.textContent="❌ Код уже использован!";
+   message.style.color="#ff5555";
+   return;
+  }
+  money+=500;
+  saveMoney();
+  usedCodes.push("Quverty");
+  localStorage.setItem("m2codes",JSON.stringify(usedCodes));
+  message.textContent="🎉 +500 МОНЕТ! ПОЗДРАВЛЯЕМ!";
+  message.style.color="#35ee91";
+  return;
+ }
+
+ message.textContent="❌ НЕВЕРНЫЙ ПРОМОКОД!";
+ message.style.color="#ff5555";
+}
+
+function adminMoney(){
+ if(!isAdmin)return;
+ money+=1000;
+ saveMoney();
+ alert("Добавлено 1000 монет!");
+}
 
 function hold(id,fn){
  const b=document.getElementById(id);
- b.addEventListener("pointerdown",e=>{e.preventDefault();fn(true)});
- ["pointerup","pointercancel","pointerleave"].forEach(ev=>b.addEventListener(ev,()=>fn(false)));
+ b.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  b.setPointerCapture(e.pointerId);
+  fn(true);
+ });
+ ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>{
+  b.addEventListener(ev,()=>fn(false));
+ });
 }
 hold("gas",v=>gas=v);
 hold("brake",v=>brake=v);
 hold("stunt",v=>stunt=v);
 
-function startGame(){
- document.getElementById("menu").style.display="none";
- document.getElementById("shop").style.display="none";
- playing=true;
-}
-function openShop(){
- playing=false;
- document.getElementById("menu").style.display="none";
- document.getElementById("shop").style.display="block";
-}
-function closeShop(){
- document.getElementById("shop").style.display="none";
- document.getElementById("menu").style.display="flex";
-}
-function buyM5(){
- if(money>=2000){
- money-=2000;scooter="KUGOO M5 PRO";
- alert("KUGOO M5 PRO куплен!");
- }else alert("Недостаточно денег!");
-}
-
 function drawCity(){
  const horizon=H*.48;
  ctx.fillStyle="#111b30";
  ctx.fillRect(0,0,W,H);
- // Луна
+
  ctx.fillStyle="#d9edff";
- ctx.beginPath();ctx.arc(W*.8,H*.15,H*.045,0,Math.PI*2);ctx.fill();
- // Здания
+ ctx.beginPath();
+ ctx.arc(W*.8,H*.15,H*.045,0,Math.PI*2);
+ ctx.fill();
+
  for(let i=0;i<16;i++){
- let x=i*W/12-(roadOffset*.25% (W/12));
- let bh=H*(.12+(i*37%100)/400);
- ctx.fillStyle=i%2?"#25344c":"#1c2940";
- ctx.fillRect(x,horizon-bh,W/14,bh);
- for(let y=horizon-bh+12;y<horizon-8;y+=20){
- ctx.fillStyle="#f5c65b";
- ctx.fillRect(x+8,y,7,9);
- ctx.fillRect(x+23,y,7,9);
+  let x=i*W/12-(roadOffset*.25%(W/12));
+  let bh=H*(.12+(i*37%100)/400);
+  ctx.fillStyle=i%2?"#25344c":"#1c2940";
+  ctx.fillRect(x,horizon-bh,W/14,bh);
+
+  for(let y=horizon-bh+12;y<horizon-8;y+=20){
+   ctx.fillStyle="#f5c65b";
+   ctx.fillRect(x+8,y,7,9);
+   ctx.fillRect(x+23,y,7,9);
+  }
  }
- }
- // Дорога
+
  ctx.fillStyle="#30343d";
  ctx.beginPath();
  ctx.moveTo(W*.35,horizon);
  ctx.lineTo(W*.65,horizon);
  ctx.lineTo(W*1.2,H);
  ctx.lineTo(-W*.2,H);
- ctx.closePath();ctx.fill();
- // Разметка
- ctx.strokeStyle="#f5d86c";ctx.lineWidth=5;
+ ctx.closePath();
+ ctx.fill();
+
+ ctx.strokeStyle="#f5d86c";
+ ctx.lineWidth=5;
  ctx.setLineDash([35,35]);
  ctx.lineDashOffset=-roadOffset;
  ctx.beginPath();
- ctx.moveTo(W*.5,horizon);ctx.lineTo(W*.5,H);
- ctx.stroke();ctx.setLineDash([]);
+ ctx.moveTo(W*.5,horizon);
+ ctx.lineTo(W*.5,H);
+ ctx.stroke();
+ ctx.setLineDash([]);
 }
 
 function drawScooter(){
  let x=W*.5,y=H*.77;
  let s=Math.min(W,H)/700;
+
  ctx.save();
  ctx.translate(x,y);
  ctx.scale(s,s);
  ctx.rotate(-wheelie*.35);
- // Тень
+
  ctx.fillStyle="#0008";
- ctx.beginPath();ctx.ellipse(0,75,115,13,0,0,Math.PI*2);ctx.fill();
- // Колёса
+ ctx.beginPath();
+ ctx.ellipse(0,75,115,13,0,0,Math.PI*2);
+ ctx.fill();
+
  ctx.fillStyle="#080b10";
  for(let wx of [-75,75]){
- ctx.beginPath();ctx.arc(wx,55,25,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="#36d9ff";ctx.lineWidth=4;ctx.stroke();
- ctx.fillStyle="#777";ctx.beginPath();ctx.arc(wx,55,8,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();
+  ctx.arc(wx,55,25,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle="#36d9ff";
+  ctx.lineWidth=4;
+  ctx.stroke();
+  ctx.fillStyle="#777";
+  ctx.beginPath();
+  ctx.arc(wx,55,8,0,Math.PI*2);
+  ctx.fill();
  }
- // Дека
+
  ctx.fillStyle="#202b3b";
  ctx.fillRect(-90,17,180,12);
- ctx.fillStyle="#32d9ff";ctx.fillRect(-65,18,130,3);
- // Руль и стойка
- ctx.strokeStyle="#b8c4d5";ctx.lineWidth=9;
- ctx.beginPath();ctx.moveTo(65,25);ctx.lineTo(47,-105);ctx.stroke();
- ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(18,-105);ctx.lineTo(75,-105);ctx.stroke();
- // Фара
- ctx.fillStyle="#fff3a0";ctx.beginPath();ctx.arc(75,-105,7,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#32d9ff";
+ ctx.fillRect(-65,18,130,3);
+
+ ctx.strokeStyle="#b8c4d5";
+ ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(65,25);
+ ctx.lineTo(47,-105);
+ ctx.stroke();
+
+ ctx.lineWidth=7;
+ ctx.beginPath();
+ ctx.moveTo(18,-105);
+ ctx.lineTo(75,-105);
+ ctx.stroke();
+
+ ctx.fillStyle="#fff3a0";
+ ctx.beginPath();
+ ctx.arc(75,-105,7,0,Math.PI*2);
+ ctx.fill();
+
  ctx.restore();
 }
 
 function frame(now){
- let dt=Math.min((now-last)/1000,.05);last=now;
+ let dt=Math.min((now-last)/1000,.05);
+ last=now;
+
  if(playing){
   if(gas)speed=Math.min(speed+45*dt,65);
   else speed=Math.max(0,speed-12*dt);
+
   if(brake)speed=Math.max(0,speed-90*dt);
+
   if(stunt&&speed>5)wheelie=Math.min(1,wheelie+2*dt);
   else wheelie=Math.max(0,wheelie-2*dt);
-  distance+=speed*dt/3.6;
+
   roadOffset+=speed*dt*5;
-  money+=speed>2?5*dt:0;
+
+  if(speed>2){
+   money+=5*dt;
+  }
  }
- drawCity();drawScooter();
+
+ drawCity();
+ drawScooter();
+
  document.getElementById("money").textContent=Math.floor(money);
  document.getElementById("speed").textContent=Math.floor(speed);
+
+ if(Math.floor(money)!==Math.floor(Number(localStorage.getItem("m2money"))||0)){
+  saveMoney();
+ }
+
  requestAnimationFrame(frame);
 }
+
 requestAnimationFrame(frame);
 </script>
 </body>
 </html>
-// ===== СИСТЕМА ПРОМОКОДОВ =====
-
-let usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]");
-let isAdmin = false;
-
-function redeemCode(code) {
-    code = code.trim();
-
-    if (code === "CMART193") {
-        isAdmin = true;
-        alert("👑 АДМИН-ДОСТУП АКТИВИРОВАН!");
-        showAdmin();
-        return;
-    }
-
-    if (code.toLowerCase() === "quverty") {
-        if (usedCodes.includes("Quverty")) {
-            alert("Этот промокод уже использован!");
-            return;
-        }
-
-        money += 500;
-        usedCodes.push("Quverty");
-        localStorage.setItem("usedCodes", JSON.stringify(usedCodes));
-
-        alert("🎉 Поздравляем! +500 монет!");
-        return;
-    }
-
-    alert("❌ Неверный промокод!");
-}
-
-function showAdmin() {
-    if (!isAdmin) return;
-
-    alert("👑 ПАНЕЛЬ АДМИНИСТРАТОРА\n\nДоступ активирован!");
-}
-
-// ===== КОНЕЦ СИСТЕМЫ =====
