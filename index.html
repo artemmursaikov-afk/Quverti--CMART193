@@ -2,248 +2,247 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kugoo Night Ride</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kugoo Night Rider</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#080d20;font-family:Arial}
-canvas{display:block;width:100vw;height:100vh}
-#hud{
- position:absolute;top:15px;left:15px;
- padding:12px 16px;border-radius:14px;
- color:white;background:#111b35dd;
- border:1px solid #657bb0;
- font-size:17px
-}
-#controls{
- position:absolute;bottom:22px;width:100%;
- display:flex;justify-content:space-between;
- padding:0 18px
-}
-button{
- padding:18px 25px;border-radius:18px;
- background:#192b50;color:white;
- border:2px solid #849bd0;
- font-size:18px;touch-action:none
-}
+body{margin:0;background:#080d20;overflow:hidden;font-family:Arial}
+canvas{width:100vw;height:100vh;display:block}
+#hud{position:absolute;top:12px;left:12px;color:white;
+background:#101a35e8;padding:12px;border-radius:12px}
+#controls{position:absolute;bottom:20px;width:100%;
+display:flex;justify-content:space-between;padding:0 18px}
+button{padding:18px 25px;border-radius:16px;
+background:#182b50;color:white;border:2px solid #9b64ff;
+font-size:18px;touch-action:none}
 </style>
 </head>
 <body>
-<div id="hud">
- 🛴 KUGOO NIGHT RIDE<br>
- Скорость: <span id="speed">0</span> км/ч
-</div>
-<canvas id="game"></canvas>
+<div id="hud">🛴 KUGOO NIGHT RIDER<br>
+Скорость: <span id="speed">0</span> км/ч</div>
 <div id="controls">
 <button id="brake">ТОРМОЗ</button>
 <button id="gas">ГАЗ ▶</button>
 </div>
-
+<canvas id="c"></canvas>
 <script>
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-
-let W,H,speed=0,distance=0,angle=0;
-let gas=false,brake=false;
-let scooterReady=false;
-let scooterImage=null;
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+let W,H,v=0,dist=0,rot=0,gas=false,brake=false;
 
 function resize(){
- W=canvas.width=innerWidth;
- H=canvas.height=innerHeight;
+ W=c.width=innerWidth;
+ H=c.height=innerHeight;
 }
-addEventListener("resize",resize);
-resize();
+onresize=resize;resize();
 
-// ЗАГРУЗКА ТВОЕГО САМОКАТА
-const photo=new Image();
-photo.src="scooter.jpg";
+function button(id,fn){
+ let b=document.getElementById(id);
+ b.onpointerdown=e=>{e.preventDefault();fn(true)};
+ b.onpointerup=()=>fn(false);
+ b.onpointerleave=()=>fn(false);
+ b.onpointercancel=()=>fn(false);
+}
+button('gas',x=>gas=x);
+button('brake',x=>brake=x);
 
-const sprite=document.createElement("canvas");
-sprite.width=620;
-sprite.height=690;
-const sc=sprite.getContext("2d");
-
-photo.onload=()=>{
- sc.drawImage(photo,450,160,620,690,0,0,620,690);
-
- // Удаляем светлый фон фотографии
- const data=sc.getImageData(0,0,620,690);
- const p=data.data;
-
- for(let i=0;i<p.length;i+=4){
-  const min=Math.min(p[i],p[i+1],p[i+2]);
-  const max=Math.max(p[i],p[i+1],p[i+2]);
-
-  if(min>205 && max-min<22){
-   p[i+3]=Math.max(0,255-(min-205)*7);
-  }
- }
- sc.putImageData(data,0,0);
- scooterReady=true;
+onkeydown=e=>{
+ if(e.key==='ArrowRight'||e.key==='d')gas=true;
+ if(e.key==='ArrowLeft'||e.key==='a')brake=true;
+};
+onkeyup=e=>{
+ if(e.key==='ArrowRight'||e.key==='d')gas=false;
+ if(e.key==='ArrowLeft'||e.key==='a')brake=false;
 };
 
-// КНОПКИ
-function control(id,fn){
- const b=document.getElementById(id);
- b.addEventListener("pointerdown",e=>{
-  e.preventDefault();fn(true);
- });
- b.addEventListener("pointerup",()=>fn(false));
- b.addEventListener("pointercancel",()=>fn(false));
- b.addEventListener("pointerleave",()=>fn(false));
-}
-control("gas",v=>gas=v);
-control("brake",v=>brake=v);
-
-addEventListener("keydown",e=>{
- if(e.key==="ArrowRight"||e.key==="d")gas=true;
- if(e.key==="ArrowLeft"||e.key==="a")brake=true;
-});
-addEventListener("keyup",e=>{
- if(e.key==="ArrowRight"||e.key==="d")gas=false;
- if(e.key==="ArrowLeft"||e.key==="a")brake=false;
-});
-
-// ГОРОД
 function background(){
- const horizon=H*.57;
-
- const sky=ctx.createLinearGradient(0,0,0,H);
- sky.addColorStop(0,"#050b20");
- sky.addColorStop(1,"#283454");
+ let horizon=H*.57;
+ let sky=ctx.createLinearGradient(0,0,0,horizon);
+ sky.addColorStop(0,'#05091e');
+ sky.addColorStop(1,'#27365d');
  ctx.fillStyle=sky;
  ctx.fillRect(0,0,W,H);
 
  // Луна
- ctx.fillStyle="#fff0bd";
+ ctx.fillStyle='#fff0c5';
  ctx.beginPath();
- ctx.arc(W*.78,H*.14,25,0,Math.PI*2);
+ ctx.arc(W*.8,H*.14,25,0,7);
  ctx.fill();
 
  // Звёзды
- for(let i=0;i<75;i++){
-  let x=(i*139)%W;
-  let y=(i*71)%(horizon-30);
-  ctx.fillStyle="#ffffffaa";
-  ctx.fillRect(x,y,2,2);
+ for(let i=0;i<80;i++){
+ ctx.fillStyle='#ffffffaa';
+ ctx.fillRect((i*137)%W,(i*71)%(horizon-20),2,2);
  }
 
- // Дома
- const bw=100;
- let offset=(distance*.35)%bw;
+ // Ночной город
+ let offset=dist*.35%100;
+ for(let x=-100;x<W+100;x+=100){
+ let index=Math.floor((x+offset)/100);
+ let h=100+Math.abs(Math.sin(index*8))*180;
+ let bx=x-offset,by=horizon-h;
+ ctx.fillStyle='#101b39';
+ ctx.fillRect(bx,by,95,h);
 
- for(let x=-bw;x<W+bw;x+=bw){
-  let index=Math.floor((x+offset)/bw);
-  let h=100+Math.abs(Math.sin(index*8.7))*190;
-  let bx=x-offset;
-  let by=horizon-h;
-
-  ctx.fillStyle="#101a36";
-  ctx.fillRect(bx,by,bw-5,h);
-
-  for(let wy=by+15;wy<horizon-10;wy+=26){
-   for(let wx=bx+12;wx<bx+bw-12;wx+=25){
-    ctx.fillStyle=((Math.floor(wx+wy+index)%3)===0)
-    ?"#eebf66":"#425779";
-    ctx.fillRect(wx,wy,10,13);
-   }
-  }
+ for(let yy=by+15;yy<horizon-10;yy+=25){
+ for(let xx=bx+12;xx<bx+85;xx+=24){
+ ctx.fillStyle='#ffdb7c';
+ ctx.fillRect(xx,yy,9,12);
+ }
+ }
  }
 
  // Дорога
- ctx.fillStyle="#171b28";
+ ctx.fillStyle='#171b27';
  ctx.fillRect(0,horizon,W,H-horizon);
+ ctx.fillStyle='#77849a';
+ ctx.fillRect(0,horizon,W,3);
 
- ctx.strokeStyle="#69738b";
- ctx.lineWidth=3;
- ctx.beginPath();
- ctx.moveTo(0,horizon);
- ctx.lineTo(W,horizon);
- ctx.stroke();
-
- // Разметка
- for(let x=-100;x<W+100;x+=110){
-  let xx=x-(distance*1.8)%110;
-  ctx.fillStyle="#d8dce8";
-  ctx.fillRect(xx,horizon+(H-horizon)*.45,48,5);
- }
-
- // Дорожные огни
- for(let i=0;i<6;i++){
-  let x=((i*210-distance*.8)%(W+210)+W+210)%(W+210);
-  ctx.fillStyle="#252d43";
-  ctx.fillRect(x,horizon-90,5,90);
-  ctx.fillStyle="#ffdf8a";
-  ctx.shadowColor="#ffdf8a";
-  ctx.shadowBlur=15;
-  ctx.beginPath();
-  ctx.arc(x+2,horizon-92,6,0,Math.PI*2);
-  ctx.fill();
-  ctx.shadowBlur=0;
+ for(let x=-100;x<W+100;x+=120){
+ ctx.fillStyle='#e5e7ec';
+ ctx.fillRect(x-dist*1.5%120,horizon+(H-horizon)*.5,48,5);
  }
 }
 
-// ВРАЩЕНИЕ КОЛЁС
-function wheel(cx,cy,r){
+function wheel(x,y,r){
  ctx.save();
- ctx.translate(cx,cy);
- ctx.rotate(angle);
+ ctx.translate(x,y);
+ ctx.rotate(rot);
 
- ctx.strokeStyle="#d4d9e5";
- ctx.lineWidth=3;
+ ctx.fillStyle='#090b10';
+ ctx.beginPath();
+ ctx.arc(0,0,r,0,7);
+ ctx.fill();
+
+ ctx.strokeStyle='#aeb8c9';
+ ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.arc(0,0,r*.76,0,7);
+ ctx.stroke();
 
  for(let i=0;i<8;i++){
-  ctx.rotate(Math.PI/4);
-  ctx.beginPath();
-  ctx.moveTo(0,0);
-  ctx.lineTo(0,r);
-  ctx.stroke();
+ ctx.rotate(Math.PI/4);
+ ctx.strokeStyle='#c9d1df';
+ ctx.lineWidth=3;
+ ctx.beginPath();
+ ctx.moveTo(0,0);
+ ctx.lineTo(0,r*.75);
+ ctx.stroke();
  }
+ ctx.fillStyle='#ff9b27';
+ ctx.beginPath();
+ ctx.arc(0,0,6,0,7);
+ ctx.fill();
+ ctx.restore();
+}
+
+function scooter(){
+ let s=Math.min(W/850,H/550,1);
+ ctx.save();
+ ctx.translate(W*.5,H*.72);
+ ctx.scale(s,s);
+
+ // Тень
+ ctx.fillStyle='#0008';
+ ctx.beginPath();
+ ctx.ellipse(0,10,200,12,0,0,7);
+ ctx.fill();
+
+ // Колёса
+ wheel(-135,0,39);
+ wheel(140,0,39);
+
+ // Заднее крыло
+ ctx.strokeStyle='#202938';
+ ctx.lineWidth=8;
+ ctx.beginPath();
+ ctx.arc(-135,0,43,Math.PI,Math.PI*1.85);
+ ctx.stroke();
+
+ // Дека
+ ctx.fillStyle='#202735';
+ ctx.beginPath();
+ ctx.roundRect(-160,-39,335,17,6);
+ ctx.fill();
+ ctx.fillStyle='#ff9427';
+ ctx.fillRect(-150,-20,300,4);
+
+ // Оранжевый маятник
+ ctx.strokeStyle='#ff9029';
+ ctx.lineWidth=13;
+ ctx.lineCap='round';
+ ctx.beginPath();
+ ctx.moveTo(-135,-3);
+ ctx.lineTo(-90,-34);
+ ctx.stroke();
+
+ ctx.beginPath();
+ ctx.moveTo(140,-3);
+ ctx.lineTo(110,-34);
+ ctx.stroke();
+
+ // Передняя стойка
+ ctx.strokeStyle='#929dad';
+ ctx.lineWidth=13;
+ ctx.beginPath();
+ ctx.moveTo(140,-35);
+ ctx.lineTo(92,-210);
+ ctx.stroke();
+
+ // Руль
+ ctx.strokeStyle='#222b3b';
+ ctx.lineWidth=13;
+ ctx.beginPath();
+ ctx.moveTo(42,-210);
+ ctx.lineTo(142,-210);
+ ctx.stroke();
+
+ // Ручки
+ ctx.strokeStyle='#111';
+ ctx.lineWidth=12;
+ ctx.beginPath();
+ ctx.moveTo(40,-210);
+ ctx.lineTo(22,-210);
+ ctx.moveTo(142,-210);
+ ctx.lineTo(165,-210);
+ ctx.stroke();
+
+ // Фара
+ ctx.fillStyle='#fff3ad';
+ ctx.shadowColor='#fff3ad';
+ ctx.shadowBlur=25;
+ ctx.beginPath();
+ ctx.arc(105,-187,9,0,7);
+ ctx.fill();
+ ctx.shadowBlur=0;
+
+ // Задний фонарь
+ ctx.fillStyle='#ff294b';
+ ctx.fillRect(-170,-39,12,10);
+
+ // Подвеска
+ ctx.strokeStyle='#c0c6d1';
+ ctx.lineWidth=6;
+ ctx.beginPath();
+ ctx.moveTo(-120,-33);
+ ctx.lineTo(-125,-8);
+ ctx.stroke();
 
  ctx.restore();
 }
 
-// САМОКАТ
-function drawScooter(){
- const scale=Math.min(W*.88/620,H*.55/690);
- const w=620*scale;
- const h=690*scale;
-
- // Камера отдалена
- const x=(W-w)/2;
- const y=H*.39;
-
- if(scooterReady){
-  ctx.drawImage(sprite,x,y,w,h);
-
-  // Анимированные спицы поверх колёс
-  wheel(x+110*scale,y+615*scale,39*scale);
-  wheel(x+540*scale,y+615*scale,39*scale);
- }else{
-  ctx.fillStyle="white";
-  ctx.font="18px Arial";
-  ctx.fillText("Загружаю Kugoo...",W/2-75,H*.7);
- }
-}
-
-function update(){
- if(gas)speed=Math.min(45,speed+.12);
- else speed=Math.max(0,speed-.035);
-
- if(brake)speed=Math.max(0,speed-.5);
-
- distance+=speed*.12;
- angle+=speed*.012;
-
- document.getElementById("speed").textContent=
- Math.round(speed);
-}
-
 function loop(){
- update();
+ if(gas)v=Math.min(50,v+.12);
+ else v=Math.max(0,v-.025);
+ if(brake)v=Math.max(0,v-.5);
+
+ dist+=v*.12;
+ rot+=v*.012;
+
+ document.getElementById('speed').textContent=Math.round(v);
+
  background();
- drawScooter();
+ scooter();
  requestAnimationFrame(loop);
 }
 loop();
