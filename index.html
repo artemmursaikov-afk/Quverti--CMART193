@@ -2,10 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>KUGOO NIGHT RIDE</title>
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none}
 body{margin:0;background:#080d1d;overflow:hidden;font-family:Arial,sans-serif}
 canvas{width:100vw;height:100vh;display:block}
 #hud{
@@ -84,7 +84,7 @@ canvas{width:100vw;height:100vh;display:block}
   <div>Твой баланс: <b style="color:#ffc16d">$<span id="shopMoney">0</span></b></div>
   <div class="product">
    <div class="scooterIcon">🛵</div>
-   <h3>Kugoo M5 Pro</h3>
+   <h3>KugooKirin M5 Pro</h3>
    <p>Цена: $2000</p>
    <div id="productStatus">С сиденьем, кофром и макс. скоростью 95 км/ч!</div>
    <br>
@@ -115,7 +115,7 @@ canvas{width:100vw;height:100vh;display:block}
 const c=document.getElementById("game");
 const ctx=c.getContext("2d");
 
-let W,H,v=0,road=0,rotation=0;
+let W=innerWidth,H=innerHeight,v=0,road=0,rotation=0;
 let gas=false,brake=false,stunt=false;
 let stuntAngle=0;
 let money=Number(localStorage.getItem("kugooMoney"))||0;
@@ -123,9 +123,11 @@ let owned=localStorage.getItem("m5proOwned")==="true";
 let selected=localStorage.getItem("selectedScooter")||"KUGOO NIGHT RIDE";
 
 function saveGame(){
- localStorage.setItem("kugooMoney",money);
- localStorage.setItem("m5proOwned",owned);
- localStorage.setItem("selectedScooter",selected);
+ try{
+  localStorage.setItem("kugooMoney",money);
+  localStorage.setItem("m5proOwned",owned);
+  localStorage.setItem("selectedScooter",selected);
+ }catch(e){}
 }
 
 function updateMoney(){
@@ -208,7 +210,7 @@ function renderInventory(){
   html+=`
    <div class="product ${selected==='KUGOO M5 PRO'?'activeItem':''}">
     <div class="scooterIcon">🛵</div>
-    <h3>Kugoo M5 Pro</h3>
+    <h3>KugooKirin M5 Pro</h3>
     <div class="stats">⚡ Макс. скорость: 95 км/ч | 💵 Доход: $12/сек</div>
     <button class="shopAction" style="background:${selected==='KUGOO M5 PRO'?'#10b981':'#2563eb'}"
      onclick="selectScooter('KUGOO M5 PRO')">
@@ -220,7 +222,7 @@ function renderInventory(){
   html+=`
    <div class="product" style="opacity:0.6">
     <div class="scooterIcon">🔒</div>
-    <h3>Kugoo M5 Pro</h3>
+    <h3>KugooKirin M5 Pro</h3>
     <div class="stats">Не куплен. Открой магазин, чтобы купить за $2000!</div>
    </div>
   `;
@@ -229,42 +231,58 @@ function renderInventory(){
 }
 
 function resize(){
- W=c.width=innerWidth;
- H=c.height=innerHeight;
+ W=c.width=window.innerWidth||document.documentElement.clientWidth;
+ H=c.height=window.innerHeight||document.documentElement.clientHeight;
 }
-addEventListener("resize",resize);
+window.addEventListener("resize",resize);
 resize();
 
 function hold(id,fn){
  const b=document.getElementById(id);
- b.onpointerdown=e=>{e.preventDefault();fn(true)};
- ["pointerup","pointercancel","pointerleave"].forEach(
-  ev=>b.addEventListener(ev,()=>fn(false))
- );
+ b.addEventListener("touchstart",e=>{e.preventDefault();fn(true)},{passive:false});
+ b.addEventListener("touchend",e=>{e.preventDefault();fn(false)},{passive:false});
+ b.addEventListener("touchcancel",()=>fn(false));
+ b.addEventListener("mousedown",e=>{e.preventDefault();fn(true)});
+ window.addEventListener("mouseup",()=>fn(false));
 }
 hold("gas",x=>gas=x);
 hold("brake",x=>brake=x);
 hold("stunt",x=>stunt=x);
 
-onkeydown=e=>{
+window.addEventListener("keydown",e=>{
  if(e.key==="ArrowRight"||e.key==="d"||e.key==="D"||e.key==="в"||e.key==="В")gas=true;
  if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A"||e.key==="ф"||e.key==="Ф")brake=true;
  if(e.key===" ")stunt=true;
-};
-onkeyup=e=>{
+});
+window.addEventListener("keyup",e=>{
  if(e.key==="ArrowRight"||e.key==="d"||e.key==="D"||e.key==="в"||e.key==="В")gas=false;
  if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A"||e.key==="ф"||e.key==="Ф")brake=false;
  if(e.key===" ")stunt=false;
-};
+});
 
 function line(x,y,x2,y2,color,w){
  ctx.strokeStyle=color;ctx.lineWidth=w;
  ctx.lineCap="round";ctx.beginPath();
  ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
 }
+
+// Безопасная функция отрисовки скруглённых прямоугольников для всех браузеров
 function box(x,y,w,h,r,color){
- ctx.fillStyle=color;ctx.beginPath();
- ctx.roundRect(x,y,w,h,r);ctx.fill();
+ ctx.fillStyle=color;
+ if(r>w/2)r=w/2;
+ if(r>h/2)r=h/2;
+ ctx.beginPath();
+ ctx.moveTo(x+r,y);
+ ctx.lineTo(x+w-r,y);
+ ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+ ctx.lineTo(x+w,y+h-r);
+ ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+ ctx.lineTo(x+r,y+h);
+ ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+ ctx.lineTo(x,y+r);
+ ctx.quadraticCurveTo(x,y,x+r,y);
+ ctx.closePath();
+ ctx.fill();
 }
 
 function city(){
@@ -276,7 +294,7 @@ function city(){
 
  ctx.fillStyle="#fff0c2";
  ctx.shadowColor="#fff0c2";ctx.shadowBlur=20;
- ctx.beginPath();ctx.arc(W*.8,H*.13,24,0,7);ctx.fill();
+ ctx.beginPath();ctx.arc(W*.8,H*.13,24,0,Math.PI*2);ctx.fill();
  ctx.shadowBlur=0;
 
  for(let i=0;i<70;i++){
@@ -307,35 +325,3 @@ function city(){
 
  for(let x=-100;x<W+100;x+=120){
   ctx.fillStyle="white";
-  ctx.fillRect(x-road*1.5%120,horizon+(H-horizon)*.52,52,5);
- }
-
- for(let i=0;i<5;i++){
-  let x=((i*230-road*.6)%(W+230)+W+230)%(W+230);
-  line(x,horizon-5,x,horizon-115,"#252f45",5);
-  ctx.fillStyle="#ffe1a0";
-  ctx.shadowColor="#ffdc8b";ctx.shadowBlur=20;
-  ctx.beginPath();ctx.arc(x,horizon-116,7,0,7);ctx.fill();
-  ctx.shadowBlur=0;
- }
-}
-
-function wheel(x,y,r,accentColor){
- ctx.save();ctx.translate(x,y);
- ctx.fillStyle="#080a0d";
- ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
- ctx.strokeStyle="#454b53";ctx.lineWidth=4;
- ctx.beginPath();ctx.arc(0,0,r-4,0,7);ctx.stroke();
- ctx.strokeStyle="#c6cbd2";ctx.lineWidth=5;
- ctx.beginPath();ctx.arc(0,0,r*.69,0,7);ctx.stroke();
-
- ctx.save();ctx.rotate(rotation);
- for(let i=0;i<10;i++){
-  ctx.rotate(Math.PI/5);
-  line(0,0,0,r*.67,"#b7c0ca",3);
- }
- ctx.restore();
-
- ctx.fillStyle=accentColor;
-
-
