@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,7 +6,7 @@
 <title>KUGOO NIGHT RIDE</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080d1d;overflow:hidden;font-family:Arial}
+body{margin:0;background:#080d1d;overflow:hidden;font-family:Arial,sans-serif}
 canvas{width:100vw;height:100vh;display:block}
 #hud{
  position:absolute;top:12px;left:12px;color:white;
@@ -17,11 +16,11 @@ canvas{width:100vw;height:100vh;display:block}
 #shopBtn{
  position:absolute;top:12px;right:12px;background:#e98222;
  color:white;border:2px solid #ffc16d;border-radius:12px;
- padding:13px 18px;font-size:16px;font-weight:bold
+ padding:13px 18px;font-size:16px;font-weight:bold;cursor:pointer
 }
 #shop{
  display:none;position:absolute;inset:0;background:#050914ed;
- color:white;align-items:center;justify-content:center;padding:18px
+ color:white;align-items:center;justify-content:center;padding:18px;z-index:10
 }
 #shopPanel{
  width:100%;max-width:420px;background:#111c32;
@@ -37,11 +36,11 @@ canvas{width:100vw;height:100vh;display:block}
 .product p{color:#ffd18b;font-weight:bold}
 .shopAction{
  width:100%;padding:15px;border:0;border-radius:12px;
- background:#0c9b55;color:white;font-weight:bold;font-size:17px
+ background:#0c9b55;color:white;font-weight:bold;font-size:17px;cursor:pointer
 }
 #closeShop{
  margin-top:12px;background:#b72b35;color:white;
- border:0;border-radius:12px;padding:12px 25px;font-weight:bold
+ border:0;border-radius:12px;padding:12px 25px;font-weight:bold;cursor:pointer
 }
 #controls{
  position:absolute;bottom:15px;width:100%;
@@ -50,7 +49,7 @@ canvas{width:100vw;height:100vh;display:block}
 #controls button{
  flex:1;max-width:230px;padding:17px 5px;
  border:2px solid #ffffff55;border-radius:18px;
- color:white;font-size:16px;font-weight:bold;touch-action:none
+ color:white;font-size:16px;font-weight:bold;touch-action:none;cursor:pointer
 }
 #gas{background:#0c9b55}
 #brake{background:#c92b32}
@@ -72,10 +71,10 @@ canvas{width:100vw;height:100vh;display:block}
   <h2>🛒 МАГАЗИН САМОКАТОВ</h2>
   <div>Твой баланс: <b style="color:#ffc16d">$<span id="shopMoney">0</span></b></div>
   <div class="product">
-   <div class="scooterIcon">🛴</div>
+   <div class="scooterIcon">🛵</div>
    <h3>Kugoo M5 Pro</h3>
    <p>Цена: $2000</p>
-   <div id="productStatus">Мощный городской самокат!</div>
+   <div id="productStatus">С сиденьем, кофром и макс. скоростью 85 км/ч!</div>
    <br>
    <button class="shopAction" id="buyBtn" onclick="buyScooter()">КУПИТЬ ЗА $2000</button>
   </div>
@@ -127,12 +126,12 @@ function updateShop(){
   btn.textContent=money>=2000?"КУПИТЬ ЗА $2000":"НЕДОСТАТОЧНО ДЕНЕГ";
   btn.disabled=money<2000;
   btn.style.opacity=money<2000?".5":"1";
-  status.textContent="Мощный городской самокат!";
+  status.textContent="С сиденьем, кофром и макс. скоростью 85 км/ч!";
  }else{
   btn.disabled=false;
   btn.style.opacity="1";
-  btn.textContent=selected==="KUGOO M5 PRO"?"ВЫБРАН":"ВЫБРАТЬ САМОКАТ";
-  status.textContent="✅ Самокат куплен!";
+  btn.textContent=selected==="KUGOO M5 PRO"?"ПЕРЕКЛЮЧИТЬ НА ОБЫЧНЫЙ":"ВЫБРАТЬ M5 PRO";
+  status.textContent="✅ Самокат куплен! Выбрано: "+selected;
  }
 }
 function buyScooter(){
@@ -140,8 +139,10 @@ function buyScooter(){
   if(money<2000)return;
   money-=2000;
   owned=true;
+  selected="KUGOO M5 PRO";
+ }else{
+  selected=selected==="KUGOO M5 PRO"?"KUGOO NIGHT RIDE":"KUGOO M5 PRO";
  }
- selected="KUGOO M5 PRO";
  saveGame();
  updateShop();
 }
@@ -165,13 +166,13 @@ hold("brake",x=>brake=x);
 hold("stunt",x=>stunt=x);
 
 onkeydown=e=>{
- if(e.key==="ArrowRight"||e.key==="d")gas=true;
- if(e.key==="ArrowLeft"||e.key==="a")brake=true;
+ if(e.key==="ArrowRight"||e.key==="d"||e.key==="D"||e.key==="в"||e.key==="В")gas=true;
+ if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A"||e.key==="ф"||e.key==="Ф")brake=true;
  if(e.key===" ")stunt=true;
 };
 onkeyup=e=>{
- if(e.key==="ArrowRight"||e.key==="d")gas=false;
- if(e.key==="ArrowLeft"||e.key==="a")brake=false;
+ if(e.key==="ArrowRight"||e.key==="d"||e.key==="D"||e.key==="в"||e.key==="В")gas=false;
+ if(e.key==="ArrowLeft"||e.key==="a"||e.key==="A"||e.key==="ф"||e.key==="Ф")brake=false;
  if(e.key===" ")stunt=false;
 };
 
@@ -238,7 +239,7 @@ function city(){
  }
 }
 
-function wheel(x,y,r){
+function wheel(x,y,r,accentColor){
  ctx.save();ctx.translate(x,y);
  ctx.fillStyle="#080a0d";
  ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
@@ -254,134 +255,86 @@ function wheel(x,y,r){
  }
  ctx.restore();
 
- ctx.fillStyle="#ff9028";
+ ctx.fillStyle=accentColor;
  ctx.beginPath();ctx.arc(0,0,9,0,7);ctx.fill();
  box(r*.43,-r*.38,13,17,4,"#c83e35");
  ctx.restore();
 }
 
 function scooter(){
+ const isM5 = selected === "KUGOO M5 PRO";
+ const mainAccent = isM5 ? "#e63946" : "#f28a25";
+ const brightAccent = isM5 ? "#ff6b6b" : "#ff922c";
+
  let s=Math.min(W/950,H/690,1.05);
  ctx.save();
  ctx.translate(W*.5,H*.75);
 
- // Вилли: передняя часть поднимается, заднее колесо остаётся на месте
  ctx.rotate(-stuntAngle);
  ctx.scale(s,s);
 
+ // Тень
  ctx.fillStyle="#08090c99";
- ctx.beginPath();ctx.ellipse(0,12,325,15,0,0,7);ctx.fill();
+ ctx.beginPath();ctx.ellipse(0,12,330,15,0,0,7);ctx.fill();
 
- ctx.strokeStyle="#171d27";ctx.lineWidth=14;
- ctx.beginPath();ctx.arc(-245,-2,65,Math.PI,Math.PI*1.88);ctx.stroke();
- ctx.beginPath();ctx.arc(235,-2,65,Math.PI,Math.PI*1.88);ctx.stroke();
+ // Крылья (у M5 Pro более массивные)
+ ctx.strokeStyle=isM5?"#1f2633":"#171d27";
+ ctx.lineWidth=isM5?18:14;
+ ctx.beginPath();ctx.arc(-245,-2,66,Math.PI,Math.PI*1.92);ctx.stroke();
+ ctx.beginPath();ctx.arc(235,-2,66,Math.PI,Math.PI*1.92);ctx.stroke();
 
- wheel(-245,0,59);
- wheel(235,0,59);
+ // Колёса (не трогаем геометрию, меняем только цвет ступицы под стиль модели)
+ wheel(-245,0,59,mainAccent);
+ wheel(235,0,59,mainAccent);
 
- line(-245,-5,-155,-69,"#f28a25",19);
- line(-245,-5,-155,-69,"#ffb04b",4);
- line(235,-5,170,-69,"#f28a25",19);
- line(235,-5,170,-69,"#ffb04b",4);
+ // Рычаги подвески
+ line(-245,-5,-155,-69,mainAccent,isM5?22:19);
+ line(-245,-5,-155,-69,brightAccent,4);
+ line(235,-5,170,-69,mainAccent,isM5?22:19);
+ line(235,-5,170,-69,brightAccent,4);
 
- line(-174,-58,-183,-12,"#aab2bd",7);
+ // Амортизаторы
+ line(-174,-58,-183,-12,"#aab2bd",isM5?9:7);
  line(-180,-58,-188,-12,"#e3e6eb",2);
- line(188,-58,201,-12,"#aab2bd",7);
+ line(188,-58,201,-12,"#aab2bd",isM5?9:7);
  line(194,-58,207,-12,"#e3e6eb",2);
 
- box(-205,-91,410,29,9,"#242b36");
- box(-197,-96,394,7,3,"#68717e");
- line(-193,-61,190,-61,"#ff8e28",4);
+ // Если M5 Pro — добавляем переднюю двойную вилку и пружины
+ if(isM5){
+  line(175,-65,222,-5,"#2b3340",10);
+  line(185,-55,212,-18,mainAccent,6);
+  // Задние двойные амортизаторы
+  line(-160,-65,-215,-12,"#2b3340",9);
+  line(-172,-55,-204,-20,mainAccent,5);
+ }
 
+ // Дека (у M5 Pro более толстая и мощная батарея)
+ if(isM5){
+  box(-215,-98,430,36,10,"#1b212c");
+  box(-205,-103,410,8,4,"#4f5866");
+  line(-200,-62,200,-62,brightAccent,5);
+ }else{
+  box(-205,-91,410,29,9,"#242b36");
+  box(-197,-96,394,7,3,"#68717e");
+  line(-193,-61,190,-61,"#ff8e28",4);
+ }
+
+ // Полоски на деке
  for(let x=-150;x<150;x+=17){
-  ctx.fillStyle="#f18b27";
+  ctx.fillStyle=mainAccent;
   ctx.beginPath();
-  ctx.moveTo(x,-86);ctx.lineTo(x+9,-86);
-  ctx.lineTo(x+4,-79);ctx.lineTo(x-5,-79);
+  ctx.moveTo(x,isM5?-93:-86);ctx.lineTo(x+9,isM5?-93:-86);
+  ctx.lineTo(x+4,isM5?-86:-79);ctx.lineTo(x-5,isM5?-86:-79);
   ctx.fill();
  }
 
- box(-220,-109,58,27,7,"#303844");
- box(150,-111,65,36,8,"#252c38");
-
- ctx.save();
- ctx.translate(175,-100);
- ctx.rotate(-.20);
- box(-17,-340,34,265,8,"#242b36");
- box(-9,-320,5,235,2,"#ff922c");
-
- ctx.save();
- ctx.translate(5,-175);
- ctx.rotate(-Math.PI/2);
- ctx.fillStyle="#ff922d";
- ctx.font="bold 15px Arial";
- ctx.textAlign="center";
- ctx.fillText(selected==="KUGOO M5 PRO"?"M5 PRO":"KUGOO",0,0);
- ctx.restore();
- ctx.restore();
-
- ctx.fillStyle="#343d49";
- ctx.beginPath();
- ctx.moveTo(140,-95);ctx.lineTo(205,-95);
- ctx.lineTo(188,-147);ctx.lineTo(162,-165);
- ctx.closePath();ctx.fill();
-
- line(133,-440,242,-440,"#181d26",13);
- line(121,-440,137,-440,"#9ba4b1",8);
- line(238,-440,255,-440,"#9ba4b1",8);
-
- box(163,-462,47,25,7,"#303946");
- box(171,-458,29,8,3,"#ff9a35");
- line(242,-440,260,-421,"#aab2bf",4);
-
- ctx.fillStyle="#ff9a36";
- ctx.shadowColor="#ff982d";ctx.shadowBlur=22;
- ctx.beginPath();ctx.arc(177,-406,12,0,7);ctx.fill();
- ctx.shadowBlur=0;
-
- line(-10,-66,-20,4,"#171c25",8);
- line(-31,4,-12,4,"#171c25",5);
-
- ctx.fillStyle="#ff2948";
- ctx.shadowColor="#ff2948";ctx.shadowBlur=14;
- ctx.fillRect(-175,-94,13,9);
- ctx.shadowBlur=0;
-
- ctx.restore();
-}
-
-let lastTime=performance.now();
-
-function loop(now){
- let dt=Math.min((now-lastTime)/1000,.05);
- lastTime=now;
-
- if(gas)v=Math.min(60,v+9*dt);
- else v=Math.max(0,v-1.5*dt);
- if(brake)v=Math.max(0,v-33*dt);
-
- // Станты доступны при движении, угол ограничен
- let targetAngle=stunt&&v>5?0.22:0;
- stuntAngle+=(targetAngle-stuntAngle)*Math.min(1,dt*5);
-
- if(v>1){
-  money+=5*dt;
-  saveGame();
-  updateMoney();
- }
-
- road+=v*.12;
- rotation+=v*.012;
-
- document.getElementById("speed").textContent=Math.round(v);
- city();
- scooter();
- requestAnimationFrame(loop);
-}
-
-updateMoney();
-updateShop();
-loop(performance.now());
-</script>
-</body>
-</html>
+ // Сиденье и задний кофр для KUGOO M5 PRO
+ if(isM5){
+  // Подседельный штырь с амортизатором
+  line(-95,-98,-115,-225,"#2a323f",14);
+  line(-100,-135,-110,-185,mainAccent,8);
+  // Багажник и кофр сзади
+  line(-120,-185,-225,-185,"#1a202b",8);
+  line(-175,-98,-205,-185,"#1a202b",7);
+  box(-245,-255,78,68,12,"#181e29");
+  box(-245,-232,78,8,2,mainAccent);
