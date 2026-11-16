@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quverty Scooter Ride</title>
+<style>
+* { box-sizing:border-box; }
+body {
+ margin:0;
+ overflow:hidden;
+ background:#070b20;
+ font-family:Arial,sans-serif;
+ color:white;
+}
+canvas { display:block; width:100vw; height:100vh; }
+#hud {
+ position:absolute; top:15px; left:15px;
+ background:#10182dcc; padding:12px 18px;
+ border:1px solid #5369a5; border-radius:12px;
+}
+#controls {
+ position:absolute; bottom:25px; width:100%;
+ display:flex; justify-content:space-between;
+ padding:0 25px; pointer-events:none;
+}
+button {
+ pointer-events:auto;
+ border:2px solid #8299dc;
+ background:#17274dcc;
+ color:white; border-radius:18px;
+ padding:18px 25px; font-size:20px;
+ touch-action:none;
+}
+</style>
+</head>
+<body>
+<div id="hud">
+ 🛴 QUVERТY RIDE<br>
+ Скорость: <span id="speed">0</span> км/ч
+</div>
+<canvas id="game"></canvas>
+<div id="controls">
+ <button id="brake">◀ ТОРМОЗ</button>
+ <button id="gas">ГАЗ ▶</button>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+let W,H;
+function resize(){
+ W=canvas.width=innerWidth;
+ H=canvas.height=innerHeight;
+}
+addEventListener("resize",resize);
+resize();
+
+let speed=0, distance=0;
+let gas=false, brake=false;
+let wheelAngle=0;
+
+function control(id,fn){
+ const b=document.getElementById(id);
+ b.addEventListener("pointerdown",e=>{
+  e.preventDefault(); fn(true);
+ });
+ b.addEventListener("pointerup",()=>fn(false));
+ b.addEventListener("pointerleave",()=>fn(false));
+ b.addEventListener("pointercancel",()=>fn(false));
+}
+control("gas",v=>gas=v);
+control("brake",v=>brake=v);
+
+addEventListener("keydown",e=>{
+ if(e.key==="ArrowRight"||e.key==="d")gas=true;
+ if(e.key==="ArrowLeft"||e.key==="a")brake=true;
+});
+addEventListener("keyup",e=>{
+ if(e.key==="ArrowRight"||e.key==="d")gas=false;
+ if(e.key==="ArrowLeft"||e.key==="a")brake=false;
+});
+
+function rect(x,y,w,h,c){
+ ctx.fillStyle=c;ctx.fillRect(x,y,w,h);
+}
+
+function city(){
+ let horizon=H*.62;
+ rect(0,0,W,H,"#080d27");
+
+ // Луна
+ ctx.fillStyle="#f1edca";
+ ctx.beginPath();
+ ctx.arc(W*.78,H*.15,27,0,Math.PI*2);
+ ctx.fill();
+
+ // Звёзды
+ for(let i=0;i<65;i++){
+  let x=(i*137)%W;
+  let y=(i*73)%(horizon-30);
+  ctx.fillStyle="#ffffff99";
+  ctx.fillRect(x,y,2,2);
+ }
+
+ // Бесконечные здания
+ let bw=90, offset=(distance*.55)%bw;
+ for(let x=-bw;x<W+bw;x+=bw){
+  let index=Math.floor((x+offset)/bw);
+  let h=90+Math.abs(Math.sin(index*12.3))*180;
+  let bx=x-offset;
+  let by=horizon-h;
+  rect(bx,by,bw-5,h,"#111d3b");
+  rect(bx+5,by+5,bw-15,3,"#304a78");
+  for(let wy=by+18;wy<horizon-12;wy+=25){
+   for(let wx=bx+12;wx<bx+bw-12;wx+=23){
+    ctx.fillStyle=((Math.floor(wx+wy+index)%4)===0)
+      ?"#34466a":"#ffd66b";
+    ctx.fillRect(wx,wy,9,12);
+   }
+  }
+ }
+ // Дорога
+ rect(0,horizon,W,H-horizon,"#171b2b");
+ rect(0,horizon,W,5,"#65718b");
+ let roadOffset=(distance*1.5)%100;
+ for(let x=-100;x<W+100;x+=100){
+  rect(x-roadOffset,horizon+75,48,5,"#dce1ec");
+ }
+}
+
+function wheel(x,y,r){
+ ctx.save();
+ ctx.translate(x,y);
+ ctx.rotate(wheelAngle);
+
+ ctx.fillStyle="#090b10";
+ ctx.beginPath();
+ ctx.arc(0,0,r,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.strokeStyle="#a8b5c9";
+ ctx.lineWidth=4;
+ ctx.beginPath();
+ ctx.arc(0,0,r*.65,0,Math.PI*2);
+ ctx.stroke();
+
+ for(let i=0;i<8;i++){
+  ctx.rotate(Math.PI/4);
+  ctx.strokeStyle="#d5d9e1";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(0,r*.65);
+  ctx.stroke();
+ }
+ ctx.fillStyle="#69778f";
+ ctx.beginPath();
+ ctx.arc(0,0,7,0,Math.PI*2);
+ ctx.fill();
+ ctx.restore();
+}
+
+function scooter(){
+ let x=W*.38;
+ let y=H*.72;
+ let scale=Math.min(W/800, H/500,1.2);
+ ctx.save();
+ ctx.translate(x,y);
+ ctx.scale(scale,scale);
+
+ // Тень
+ ctx.fillStyle="#0008";
+ ctx.beginPath();
+ ctx.ellipse(0,15,150,9,0,0,Math.PI*2);
+ ctx.fill();
+
+ // Колёса
+ wheel(-85,0,27);
+ wheel(82,0,27);
+
+ // Заднее крыло
+ ctx.strokeStyle="#aab5c9";
+ ctx.lineWidth=5;
+ ctx.beginPath();
+ ctx.arc(-85,0,31,Math.PI,Math.PI*1.85);
+ ctx.stroke();
+
+ // Дека
+ ctx.fillStyle="#252c3b";
+ ctx.beginPath();
+ ctx.roundRect(-104,-31,205,13,6);
+ ctx.fill();
+ ctx.fillStyle="#9c4dff";
+ ctx.fillRect(-98,-19,190,3);
+
+ // Передняя стойка
+ ctx.strokeStyle="#c6ccd9";
+ ctx.lineWidth=11;
+ ctx.beginPath();
+ ctx.moveTo(82,-17);
+ ctx.lineTo(51,-158);
+ ctx.stroke();
+
+ // Руль
+ ctx.strokeStyle="#222b3b";
+ ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(20,-158);
+ ctx.lineTo(83,-158);
+ ctx.stroke();
+
+ // Ручки
+ ctx.fillStyle="#a7b0c0";
+ ctx.fillRect(12,-163,17,10);
+ ctx.fillRect(78,-163,17,10);
+
+ // Фара
+ ctx.fillStyle="#fff4a5";
+ ctx.shadowColor="#fff1a0";
+ ctx.shadowBlur=20;
+ ctx.beginPath();
+ ctx.arc(54,-145,6,0,Math.PI*2);
+ ctx.fill();
+ ctx.shadowBlur=0;
+
+ // Задний фонарь
+ ctx.fillStyle="#ff304d";
+ ctx.shadowColor="#ff304d";
+ ctx.shadowBlur=12;
+ ctx.fillRect(-110,-30,9,9);
+ ctx.shadowBlur=0;
+
+ // Амортизатор
+ ctx.strokeStyle="#9ba5b8";
+ ctx.lineWidth=5;
+ ctx.beginPath();
+ ctx.moveTo(-65,-24);
+ ctx.lineTo(-70,-5);
+ ctx.stroke();
+
+ ctx.restore();
+}
+
+function update(){
+ if(gas)speed=Math.min(speed+.12,45);
+ else speed=Math.max(0,speed-.025);
+ if(brake)speed=Math.max(0,speed-.45);
+
+ distance+=speed*.12;
+ wheelAngle+=speed*.012;
+
+ document.getElementById("speed").textContent=
+ Math.round(speed);
+}
+
+function loop(){
+ update();
+ city();
+ scooter();
+ requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
