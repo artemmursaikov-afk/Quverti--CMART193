@@ -12,52 +12,49 @@ canvas{width:100vw;height:100vh;display:block}
 #hud{
  position:absolute;top:12px;left:12px;color:white;
  background:#10192ddd;border:1px solid #ff922c;
- border-radius:12px;padding:12px;font-weight:bold;
- line-height:1.6
+ border-radius:12px;padding:12px;font-weight:bold;line-height:1.6
 }
 #shopBtn{
- position:absolute;top:12px;right:12px;
- background:#e98222;color:white;border:2px solid #ffc16d;
- border-radius:12px;padding:13px 18px;
- font-size:16px;font-weight:bold;max-width:150px;
+ position:absolute;top:12px;right:12px;background:#e98222;
+ color:white;border:2px solid #ffc16d;border-radius:12px;
+ padding:13px 18px;font-size:16px;font-weight:bold
 }
 #shop{
- display:none;position:absolute;inset:0;
- background:#050914ed;color:white;
- align-items:center;justify-content:center;padding:18px;
+ display:none;position:absolute;inset:0;background:#050914ed;
+ color:white;align-items:center;justify-content:center;padding:18px
 }
 #shopPanel{
- width:100%;max-width:420px;
- background:#111c32;border:2px solid #ff922c;
- border-radius:20px;padding:22px;text-align:center;
+ width:100%;max-width:420px;background:#111c32;
+ border:2px solid #ff922c;border-radius:20px;padding:22px;text-align:center
 }
 #shopPanel h2{color:#ffad45;margin-top:0}
 .product{
  background:#1c2b46;border:1px solid #53627c;
- border-radius:15px;padding:18px;margin:15px 0;
+ border-radius:15px;padding:18px;margin:15px 0
 }
-.product .scooterIcon{font-size:65px}
+.scooterIcon{font-size:65px}
 .product h3{margin:8px}
 .product p{color:#ffd18b;font-weight:bold}
 .shopAction{
  width:100%;padding:15px;border:0;border-radius:12px;
- background:#0c9b55;color:white;font-weight:bold;font-size:17px;
+ background:#0c9b55;color:white;font-weight:bold;font-size:17px
 }
 #closeShop{
  margin-top:12px;background:#b72b35;color:white;
- border:0;border-radius:12px;padding:12px 25px;font-weight:bold;
+ border:0;border-radius:12px;padding:12px 25px;font-weight:bold
 }
 #controls{
  position:absolute;bottom:15px;width:100%;
- display:flex;justify-content:space-around;gap:12px;padding:0 12px
+ display:flex;justify-content:space-around;gap:8px;padding:0 10px
 }
 #controls button{
- flex:1;max-width:230px;padding:18px 8px;
+ flex:1;max-width:230px;padding:17px 5px;
  border:2px solid #ffffff55;border-radius:18px;
- color:white;font-size:19px;font-weight:bold;touch-action:none
+ color:white;font-size:16px;font-weight:bold;touch-action:none
 }
 #gas{background:#0c9b55}
 #brake{background:#c92b32}
+#stunt{background:#8b36c9}
 </style>
 </head>
 <body>
@@ -74,18 +71,14 @@ canvas{width:100vw;height:100vh;display:block}
  <div id="shopPanel">
   <h2>🛒 МАГАЗИН САМОКАТОВ</h2>
   <div>Твой баланс: <b style="color:#ffc16d">$<span id="shopMoney">0</span></b></div>
-
   <div class="product">
    <div class="scooterIcon">🛴</div>
    <h3>Kugoo M5 Pro</h3>
    <p>Цена: $2000</p>
    <div id="productStatus">Мощный городской самокат!</div>
    <br>
-   <button class="shopAction" id="buyBtn" onclick="buyScooter()">
-    КУПИТЬ ЗА $2000
-   </button>
+   <button class="shopAction" id="buyBtn" onclick="buyScooter()">КУПИТЬ ЗА $2000</button>
   </div>
-
   <button id="closeShop" onclick="closeShop()">ЗАКРЫТЬ</button>
  </div>
 </div>
@@ -93,16 +86,18 @@ canvas{width:100vw;height:100vh;display:block}
 <canvas id="game"></canvas>
 
 <div id="controls">
-<button id="brake">ТОРМОЗ</button>
-<button id="gas">⚡ ГАЗ</button>
+ <button id="brake">🛑 ТОРМОЗ</button>
+ <button id="stunt">🔥 СТАНТ</button>
+ <button id="gas">⚡ ГАЗ</button>
 </div>
 
 <script>
 const c=document.getElementById("game");
 const ctx=c.getContext("2d");
 
-let W,H,v=0,road=0,rotation=0,gas=false,brake=false;
-
+let W,H,v=0,road=0,rotation=0;
+let gas=false,brake=false,stunt=false;
+let stuntAngle=0;
 let money=Number(localStorage.getItem("kugooMoney"))||0;
 let owned=localStorage.getItem("m5proOwned")==="true";
 let selected=localStorage.getItem("selectedScooter")||"KUGOO NIGHT RIDE";
@@ -112,27 +107,22 @@ function saveGame(){
  localStorage.setItem("m5proOwned",owned);
  localStorage.setItem("selectedScooter",selected);
 }
-
 function updateMoney(){
  document.getElementById("money").textContent=Math.floor(money);
  document.getElementById("shopMoney").textContent=Math.floor(money);
  document.getElementById("modelName").textContent=selected;
 }
-
 function openShop(){
  updateShop();
  document.getElementById("shop").style.display="flex";
 }
-
 function closeShop(){
  document.getElementById("shop").style.display="none";
 }
-
 function updateShop(){
  updateMoney();
  const btn=document.getElementById("buyBtn");
  const status=document.getElementById("productStatus");
-
  if(!owned){
   btn.textContent=money>=2000?"КУПИТЬ ЗА $2000":"НЕДОСТАТОЧНО ДЕНЕГ";
   btn.disabled=money<2000;
@@ -145,18 +135,14 @@ function updateShop(){
   status.textContent="✅ Самокат куплен!";
  }
 }
-
 function buyScooter(){
  if(!owned){
   if(money<2000)return;
   money-=2000;
   owned=true;
-  selected="KUGOO M5 PRO";
-  saveGame();
- }else{
-  selected="KUGOO M5 PRO";
-  saveGame();
  }
+ selected="KUGOO M5 PRO";
+ saveGame();
  updateShop();
 }
 
@@ -176,14 +162,17 @@ function hold(id,fn){
 }
 hold("gas",x=>gas=x);
 hold("brake",x=>brake=x);
+hold("stunt",x=>stunt=x);
 
 onkeydown=e=>{
  if(e.key==="ArrowRight"||e.key==="d")gas=true;
  if(e.key==="ArrowLeft"||e.key==="a")brake=true;
+ if(e.key===" ")stunt=true;
 };
 onkeyup=e=>{
  if(e.key==="ArrowRight"||e.key==="d")gas=false;
  if(e.key==="ArrowLeft"||e.key==="a")brake=false;
+ if(e.key===" ")stunt=false;
 };
 
 function line(x,y,x2,y2,color,w){
@@ -191,7 +180,6 @@ function line(x,y,x2,y2,color,w){
  ctx.lineCap="round";ctx.beginPath();
  ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
 }
-
 function box(x,y,w,h,r,color){
  ctx.fillStyle=color;ctx.beginPath();
  ctx.roundRect(x,y,w,h,r);ctx.fill();
@@ -237,8 +225,7 @@ function city(){
 
  for(let x=-100;x<W+100;x+=120){
   ctx.fillStyle="white";
-  ctx.fillRect(x-road*1.5%120,
-  horizon+(H-horizon)*.52,52,5);
+  ctx.fillRect(x-road*1.5%120,horizon+(H-horizon)*.52,52,5);
  }
 
  for(let i=0;i<5;i++){
@@ -255,10 +242,8 @@ function wheel(x,y,r){
  ctx.save();ctx.translate(x,y);
  ctx.fillStyle="#080a0d";
  ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
-
  ctx.strokeStyle="#454b53";ctx.lineWidth=4;
  ctx.beginPath();ctx.arc(0,0,r-4,0,7);ctx.stroke();
-
  ctx.strokeStyle="#c6cbd2";ctx.lineWidth=5;
  ctx.beginPath();ctx.arc(0,0,r*.69,0,7);ctx.stroke();
 
@@ -279,6 +264,9 @@ function scooter(){
  let s=Math.min(W/950,H/690,1.05);
  ctx.save();
  ctx.translate(W*.5,H*.75);
+
+ // Вилли: передняя часть поднимается, заднее колесо остаётся на месте
+ ctx.rotate(-stuntAngle);
  ctx.scale(s,s);
 
  ctx.fillStyle="#08090c99";
@@ -344,7 +332,6 @@ function scooter(){
 
  box(163,-462,47,25,7,"#303946");
  box(171,-458,29,8,3,"#ff9a35");
-
  line(242,-440,260,-421,"#aab2bf",4);
 
  ctx.fillStyle="#ff9a36";
@@ -372,6 +359,10 @@ function loop(now){
  if(gas)v=Math.min(60,v+9*dt);
  else v=Math.max(0,v-1.5*dt);
  if(brake)v=Math.max(0,v-33*dt);
+
+ // Станты доступны при движении, угол ограничен
+ let targetAngle=stunt&&v>5?0.22:0;
+ stuntAngle+=(targetAngle-stuntAngle)*Math.min(1,dt*5);
 
  if(v>1){
   money+=5*dt;
